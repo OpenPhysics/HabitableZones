@@ -1,0 +1,35 @@
+{
+  "title": "Zonas habitables",
+  "screens": {
+    "circumstellar": "Circunestelar",
+    "galactic": "Galáctica"
+  },
+  "a11y": {
+    "circumstellar": {
+      "screenSummary": {
+        "playArea": "El área de juego muestra una estrella con su zona habitable circunestelar y un planeta en órbita.",
+        "controlArea": "El área de control tiene controles para la estrella y la órbita del planeta, además de un botón Restablecer todo que devuelve la pantalla a su estado inicial.",
+        "interactionHint": "Ajusta la estrella y la órbita para ver cómo cambia la zona habitable circunestelar."
+      },
+      "currentDetails": "La pantalla está en su estado inicial.",
+      "controls": {
+        "exampleControl": "Control de ejemplo"
+      }
+    },
+    "galactic": {
+      "screenSummary": {
+        "playArea": "El área de juego muestra la galaxia de la Vía Láctea y la banda que forma su zona habitable galáctica.",
+        "controlArea": "El área de control tiene controles para los factores que rigen la habitabilidad galáctica, además de un botón Restablecer todo que devuelve la pantalla a su estado inicial.",
+        "interactionHint": "Ajusta los factores para ver cómo cambia la zona habitable galáctica."
+      },
+      "currentDetails": "La pantalla está en su estado inicial.",
+      "controls": {
+        "exampleControl": "Control de ejemplo"
+      }
+    }
+  },
+  "preferences": {
+    "title": "Simulación",
+    "exampleToggle": "Ejemplo de alternancia"
+  }
+}

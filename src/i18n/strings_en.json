@@ -1,0 +1,35 @@
+{
+  "title": "Habitable Zones",
+  "screens": {
+    "circumstellar": "Circumstellar",
+    "galactic": "Galactic"
+  },
+  "a11y": {
+    "circumstellar": {
+      "screenSummary": {
+        "playArea": "The play area shows a star with its circumstellar habitable zone and an orbiting planet.",
+        "controlArea": "The control area has controls for the star and the planet's orbit, plus a Reset All button that returns the screen to its starting state.",
+        "interactionHint": "Adjust the star and the orbit to see how the circumstellar habitable zone changes."
+      },
+      "currentDetails": "The screen is in its initial state.",
+      "controls": {
+        "exampleControl": "Example control"
+      }
+    },
+    "galactic": {
+      "screenSummary": {
+        "playArea": "The play area shows the Milky Way galaxy and the band that forms its galactic habitable zone.",
+        "controlArea": "The control area has controls for the factors that govern galactic habitability, plus a Reset All button that returns the screen to its starting state.",
+        "interactionHint": "Adjust the factors to see how the galactic habitable zone changes."
+      },
+      "currentDetails": "The screen is in its initial state.",
+      "controls": {
+        "exampleControl": "Example control"
+      }
+    }
+  },
+  "preferences": {
+    "title": "Simulation",
+    "exampleToggle": "Example Toggle"
+  }
+}
