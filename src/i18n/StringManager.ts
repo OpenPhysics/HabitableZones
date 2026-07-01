@@ -31,6 +31,10 @@ import stringsFr from "./strings_fr.json";
 void (stringsEn satisfies typeof stringsFr);
 // biome-ignore lint/complexity/noVoid: intentional compile-time type assertion
 void (stringsFr satisfies typeof stringsEn);
+// biome-ignore lint/complexity/noVoid: intentional compile-time type assertion
+void (stringsEn satisfies typeof stringsEs);
+// biome-ignore lint/complexity/noVoid: intentional compile-time type assertion
+void (stringsEs satisfies typeof stringsEn);
 
 // ── Build the reactive string property tree ───────────────────────────────────
 const stringProperties = LocalizedString.getNestedStringProperties({
@@ -78,6 +82,22 @@ export class StringManager {
       circumstellarStringProperty: stringProperties.screens.circumstellarStringProperty,
       galacticStringProperty: stringProperties.screens.galacticStringProperty,
     };
+  }
+
+  /**
+   * UI label StringProperties for the Circumstellar screen — control panel
+   * labels, physical-quantity names, and unit strings.
+   */
+  public getCircumstellarStrings() {
+    return stringProperties.circumstellar;
+  }
+
+  /**
+   * UI label StringProperties for the Galactic screen — control panel labels,
+   * physical-quantity names, and unit strings.
+   */
+  public getGalacticStrings() {
+    return stringProperties.galactic;
   }
 
   /**
