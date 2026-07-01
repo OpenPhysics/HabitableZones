@@ -4,6 +4,28 @@
     "circumstellar": "Circunestelar",
     "galactic": "Galáctica"
   },
+  "circumstellar": {
+    "stellarType": "Tipo estelar",
+    "stellarLuminosity": "Luminosidad estelar",
+    "stellarTemperature": "Temperatura estelar",
+    "orbitalRadius": "Radio orbital",
+    "habitableZone": "Zona habitable",
+    "innerEdge": "Borde interior",
+    "outerEdge": "Borde exterior",
+    "showHabitableZone": "Mostrar zona habitable",
+    "planet": "Planeta",
+    "unitsAu": "UA",
+    "unitsSolarLuminosities": "L☉"
+  },
+  "galactic": {
+    "distanceFromCenter": "Distancia desde el centro galáctico",
+    "metallicity": "Metalicidad",
+    "supernovaRate": "Tasa de supernovas",
+    "starFormationRate": "Tasa de formación estelar",
+    "galacticHabitableZone": "Zona habitable galáctica",
+    "unitsKiloparsecs": "kpc",
+    "unitsSolarMetallicities": "Z☉"
+  },
   "a11y": {
     "circumstellar": {
       "screenSummary": {
