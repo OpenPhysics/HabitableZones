@@ -1,80 +1,77 @@
 /**
  * CircumstellarScreenView.ts
  *
- * The top-level view for the simulation screen.
- *
- * All visual nodes are added here. Follow these conventions:
- *   - Use this.layoutBounds for positioning (never magic pixel values)
- *   - Keep a ResetAllButton that calls model.reset() and this.reset()
- *   - Override step(dt) for frame-by-frame animation
- *
- * ── Adding content ────────────────────────────────────────────────────────────
- * 1. Create Node subclasses in separate files (e.g. SimControlPanel.ts)
- * 2. Instantiate them here and call this.addChild(...)
- * 3. Link them to model properties:
- *      model.isRunningProperty.link( isRunning => { ... } );
- *
- * ── Layout bounds ─────────────────────────────────────────────────────────────
- * SceneryStack uses a virtual 1024×618 coordinate space by default.
- * this.layoutBounds gives you the full rectangle; use it for alignment:
- *   center, minX, maxX, minY, maxY, width, height
+ * Top-level view for the Circumstellar screen, laid out in the four regions of
+ * the original NAAP sim:
+ *   1. a wide top-down diagram box (top),
+ *   2. a "General Settings" box + "Star and Planet Settings and Properties" box
+ *      + the H-R diagram (middle row),
+ *   3. a full-width "Timeline and Simulation Controls" region (bottom).
  */
 
-import { Node, Rectangle, Text } from "scenerystack/scenery";
+import { Node } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { ScreenView } from "scenerystack/sim";
-import HabitableZonesColors from "../../HabitableZonesColors.js";
-import { SCREEN_VIEW_MARGIN } from "../../HabitableZonesConstants.js";
+import { HabitableZonesPanel } from "../../common/HabitableZonesPanel.js";
+import { SCREEN_VIEW_MARGIN, SHZ_DIAGRAM_VIEW_HEIGHT } from "../../HabitableZonesConstants.js";
 import type { CircumstellarModel } from "../model/CircumstellarModel.js";
+import { CircumstellarControlPanel } from "./CircumstellarControlPanel.js";
 import { CircumstellarScreenSummaryContent } from "./CircumstellarScreenSummaryContent.js";
+import { GeneralSettingsPanel } from "./GeneralSettingsPanel.js";
+import { HRDiagramNode } from "./HRDiagramNode.js";
+import { SHZDiagramNode } from "./SHZDiagramNode.js";
+import { SHZTimelineNode } from "./SHZTimelineNode.js";
+
+const MARGIN = 12;
+const ROW_GAP = 8;
 
 export class CircumstellarScreenView extends ScreenView {
   public constructor(model: CircumstellarModel, options?: ScreenViewOptions) {
-    // ── Accessibility: screen summary ───────────────────────────────────────────
-    // The screen summary is the first thing a screen-reader user encounters. It
-    // is registered here, in the ScreenView's super() options, so every sim wires
-    // it the same way. See CircumstellarScreenSummaryContent for the four content regions.
     super({
       screenSummaryContent: new CircumstellarScreenSummaryContent(model),
       ...options,
     });
 
-    // ── Background ────────────────────────────────────────────────────────────
-    // A full-screen rectangle that follows the active color profile.
-    // Replace or remove once you add real content.
-    const backgroundRect = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {
-      fill: HabitableZonesColors.backgroundColorProperty,
+    const contentWidth = this.layoutBounds.width - 2 * MARGIN;
+
+    // ── Region 1: wide top-down diagram box ────────────────────────────────────
+    const diagramNode = new SHZDiagramNode(model, {
+      viewWidth: contentWidth,
+      viewHeight: SHZ_DIAGRAM_VIEW_HEIGHT,
     });
-    this.addChild(backgroundRect);
+    diagramNode.left = this.layoutBounds.minX + MARGIN;
+    diagramNode.top = this.layoutBounds.minY + MARGIN;
+    this.addChild(diagramNode);
 
-    // ── Placeholder label ─────────────────────────────────────────────────────
-    // Replace this with your actual simulation content.
-    const placeholderText = new Text("Circumstellar Habitable Zone", {
-      font: "bold 36px sans-serif",
-      fill: HabitableZonesColors.textColorProperty,
-      center: this.layoutBounds.center,
-    });
-    this.addChild(placeholderText);
+    const middleTop = diagramNode.bottom + ROW_GAP;
 
-    // ── Accessibility: per-control names ────────────────────────────────────────
-    // EVERY interactive node must carry an `accessibleName` (and an
-    // `accessibleHelpText` where useful), sourced from the StringManager `a11y`
-    // string group — never a hard-coded English literal. Sun/scenery-phet controls
-    // (NumberControl, Checkbox, ComboBox, AquaRadioButtonGroup, …) accept it as an
-    // option; a draggable plain Node needs `tagName: "div", focusable: true` too.
-    // Example (uncomment and adapt when you add a real control):
-    //
-    //   const a11y = StringManager.getInstance().getCircumstellarA11yStrings();
-    //   const exampleButton = new RectangularPushButton({
-    //     content: someIcon,
-    //     listener: () => model.doSomething(),
-    //     accessibleName: a11y.controls.exampleControlStringProperty,
-    //   });
-    //   this.addChild(exampleButton);
+    // ── Region 2: General Settings + Star/Planet Settings + H-R diagram ────────
+    const generalSettingsPanel = new GeneralSettingsPanel(model);
+    generalSettingsPanel.left = this.layoutBounds.minX + MARGIN;
+    generalSettingsPanel.top = middleTop;
+    this.addChild(generalSettingsPanel);
 
-    // ── Reset All button ──────────────────────────────────────────────────────
-    // Always position at bottom-right (PhET convention).
+    const comboBoxListParent = new Node();
+    const controlPanel = new CircumstellarControlPanel(model, comboBoxListParent);
+    controlPanel.left = generalSettingsPanel.right + ROW_GAP;
+    controlPanel.top = middleTop;
+    this.addChild(controlPanel);
+
+    const hrDiagramNode = new HRDiagramNode(model);
+    const hrPanel = new HabitableZonesPanel(hrDiagramNode);
+    hrPanel.right = this.layoutBounds.maxX - MARGIN;
+    hrPanel.top = middleTop;
+    this.addChild(hrPanel);
+
+    // ── Region 3: full-width timeline ──────────────────────────────────────────
+    const timelineNode = new SHZTimelineNode(model);
+    timelineNode.left = this.layoutBounds.minX + MARGIN;
+    timelineNode.bottom = this.layoutBounds.maxY - MARGIN;
+    this.addChild(timelineNode);
+
+    this.addChild(comboBoxListParent);
+
     const resetAllButton = new ResetAllButton({
       listener: () => {
         model.reset();
@@ -85,35 +82,30 @@ export class CircumstellarScreenView extends ScreenView {
     });
     this.addChild(resetAllButton);
 
-    // ── Accessibility: keyboard / reading traversal order ───────────────────────
-    // Make the parallel DOM (Tab order and screen-reader reading order)
-    // deterministic and independent of child z-order. ScreenView throws if you
-    // set pdomOrder on itself, so add a lightweight wrapper Node that "borrows"
-    // the interactive nodes in the order a user should reach them — Reset All
-    // last. Non-interactive decoration (background, placeholder) is omitted.
     this.addChild(
       new Node({
         pdomOrder: [
-          // TODO: add the sim's interactive nodes here, in traversal order
+          generalSettingsPanel.showGridCheckbox,
+          generalSettingsPanel.showOrbitsCheckbox,
+          controlPanel.realSystemComboBox,
+          controlPanel.starComboBox,
+          controlPanel.planetDistanceControl,
+          controlPanel.zoomInButton,
+          controlPanel.zoomOutButton,
+          controlPanel.hzModeRadioButtonGroup,
+          diagramNode.planetNode,
+          timelineNode.timelineCursor,
           resetAllButton,
         ],
       }),
     );
   }
 
-  /**
-   * Resets view-side state (animations, panel visibility, etc.).
-   * Called by the Reset All button listener.
-   */
   public reset(): void {
-    // TODO: reset any view-side state here
+    // No view-side state to reset yet.
   }
 
-  /**
-   * Steps the view forward by dt seconds for animation.
-   * @param _dt - elapsed time in seconds
-   */
   public override step(_dt: number): void {
-    // TODO: implement animation updates here
+    // Model step is handled by the Sim framework via CircumstellarScreen.
   }
 }

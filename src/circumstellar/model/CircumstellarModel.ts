@@ -1,43 +1,410 @@
 /**
  * CircumstellarModel.ts
  *
- * The top-level model for the simulation screen.
+ * Model for the Circumstellar screen: a star (selected from the SHZ_STARS
+ * catalog), an orbiting planet at a given distance, and the circumstellar
+ * habitable zone (HZ) the star casts. Star properties are sampled from the
+ * evolution catalog at the current age; the timeline can play or scrub through
+ * the star's lifetime.
  *
- * Add your simulation's state here using reactive Property objects from
- * scenerystack/axon. The view observes these properties and updates automatically.
- *
- * ── Example ──────────────────────────────────────────────────────────────────
- *   import { BooleanProperty, NumberProperty } from "scenerystack/axon";
- *
- *   public readonly isRunningProperty = new BooleanProperty(false);
- *   public readonly timeProperty = new NumberProperty(0);    // seconds
- *
- * ── Step cycle ────────────────────────────────────────────────────────────────
- * The Sim calls step(dt) on every animation frame. Advance your model state
- * in that method (e.g. integrate equations, update positions).
- *
- * ── Reset ─────────────────────────────────────────────────────────────────────
- * reset() is called when the user presses Reset All. Call .reset() on every
- * Property declared here.
+ * Stage A5 adds real exoplanet presets, diagram zoom, and tidal-locking /
+ * destruction times using the Flash orbital-distance scaling (d ∝ M₀/M(t)).
  */
+
+import type { TReadOnlyProperty } from "scenerystack/axon";
+import { BooleanProperty, DerivedProperty, NumberProperty, StringUnionProperty } from "scenerystack/axon";
+import { Range } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
+import { TimeModel } from "../../common/TimeModel.js";
+import {
+  FULL_STAR_EVOLUTION_PLAYBACK_SECONDS,
+  HZ_CONSERVATIVE,
+  HZ_OPTIMISTIC,
+  PLANET_DISTANCE_RANGE_AU,
+  SHZ_DIAGRAM_DEFAULT_ZOOM_LEVEL,
+  SHZ_DIAGRAM_ZOOM_AU_VALUES,
+  SHZ_TIMELINE_WIDTH_PX,
+} from "../../HabitableZonesConstants.js";
+import { findStarIndexByMass } from "./findStarIndexByMass.js";
+import {
+  computePlanetDestructionTimeYears,
+  computeTidalLockTimeYears,
+  effectivePlanetDistanceAU,
+  effectivePlanetDistanceRangeAU,
+  initialPlanetDistanceAU,
+  isTidalLockMarkerVisible,
+} from "./planetEvolution.js";
+import { findRealSystem, NONE_REAL_SYSTEM_ID, planetPericenterAU, REAL_SYSTEMS } from "./realSystems.js";
+import { luminosity, radiusSolar, sampleStar, temperatureK } from "./StarEvolution.js";
+import type { StarRecord } from "./shzStars.js";
+import { SHZ_STARS } from "./shzStars.js";
+
+export type HzMode = "optimistic" | "conservative";
+export type PlanetStatus = "tooHot" | "temperate" | "tooCold";
+
+export type RealSystemId = typeof NONE_REAL_SYSTEM_ID | (typeof REAL_SYSTEMS)[number]["id"];
+
+const REAL_SYSTEM_IDS = [NONE_REAL_SYSTEM_ID, ...REAL_SYSTEMS.map((system) => system.id)] as const;
+
+function getStar(index: number): StarRecord {
+  const star = SHZ_STARS[index];
+  if (star === undefined) {
+    throw new Error(`CircumstellarModel: no star at catalog index ${index}`);
+  }
+  return star;
+}
+
+function findSunStarIndex(): number {
+  return findStarIndexByMass(1);
+}
+
+const HZ_COEFFICIENTS: Record<HzMode, { inner: number; outer: number }> = {
+  optimistic: HZ_OPTIMISTIC,
+  conservative: HZ_CONSERVATIVE,
+};
+
+export function classifyPlanetDistance(distanceAU: number, hzInnerAU: number, hzOuterAU: number): PlanetStatus {
+  if (distanceAU < hzInnerAU) {
+    return "tooHot";
+  }
+  if (distanceAU > hzOuterAU) {
+    return "tooCold";
+  }
+  return "temperate";
+}
 
 export class CircumstellarModel implements TModel {
-  /**
-   * Resets all model state to initial values.
-   * Called when the user presses the Reset All button.
-   */
-  public reset(): void {
-    // TODO: call .reset() on every Property declared in this model
-  }
+  /** Play/pause clock for stellar evolution. */
+  public readonly timer: TimeModel;
+
+  /** Index into SHZ_STARS for the currently selected star. */
+  public readonly selectedStarIndexProperty: NumberProperty;
+
+  /** Stellar age since zero-age main sequence, years. */
+  public readonly ageProperty: NumberProperty;
 
   /**
-   * Steps the model forward by dt seconds.
-   * Called every animation frame by the Sim framework.
-   *
-   * @param _dt - elapsed time in seconds since the last frame
+   * Zero-age orbital distance (AU). As the star loses mass the displayed
+   * distance scales as M₀/M(t); see effectivePlanetDistanceProperty.
    */
-  public step(_dt: number): void {
-    // TODO: advance simulation state here
+  public readonly planetDistanceProperty: NumberProperty;
+
+  /** Which habitable-zone limit convention to display. */
+  public readonly hzModeProperty: StringUnionProperty<HzMode>;
+
+  /** Whether to draw the solar-system reference orbits (Mercury..Neptune). */
+  public readonly showReferenceOrbitsProperty: BooleanProperty;
+
+  /** Whether to overlay the AU scale grid on the diagram. Off by default (matches NAAP). */
+  public readonly showGridProperty: BooleanProperty;
+
+  /** Timeline playback speed multiplier (0.1×..2×). Source: timeline.jsx animationRate. */
+  public readonly animationRateProperty: NumberProperty;
+
+  /** Selected real exoplanet system preset, or "none". */
+  public readonly selectedRealSystemIdProperty: StringUnionProperty<RealSystemId>;
+
+  /** Diagram zoom-level index into SHZ_DIAGRAM_ZOOM_AU_VALUES. */
+  public readonly diagramZoomLevelProperty: NumberProperty;
+
+  /** Maximum age for the selected star, years. */
+  public readonly starTimespanProperty: TReadOnlyProperty<number>;
+
+  /** Catalog (zero-age) mass of the selected star, M☉. */
+  public readonly catalogStarMassProperty: TReadOnlyProperty<number>;
+
+  /** Current stellar mass at the selected age, M☉. */
+  public readonly currentStarMassProperty: TReadOnlyProperty<number>;
+
+  /** Mass-scaled orbital distance at the current age, AU. */
+  public readonly effectivePlanetDistanceProperty: TReadOnlyProperty<number>;
+
+  /** Writable mirror of effectivePlanetDistanceProperty for NumberControl binding. */
+  public readonly displayPlanetDistanceProperty: NumberProperty;
+
+  /** Luminosity of the selected star at the current age, solar units (L☉). */
+  public readonly luminosityProperty: TReadOnlyProperty<number>;
+
+  /** Effective temperature of the selected star at the current age, kelvin. */
+  public readonly temperatureProperty: TReadOnlyProperty<number>;
+
+  /** Radius of the selected star at the current age, solar units (R☉). */
+  public readonly radiusSolarProperty: TReadOnlyProperty<number>;
+
+  /** Inner edge of the circumstellar habitable zone, AU. */
+  public readonly hzInnerProperty: TReadOnlyProperty<number>;
+
+  /** Outer edge of the circumstellar habitable zone, AU. */
+  public readonly hzOuterProperty: TReadOnlyProperty<number>;
+
+  /** Whether the planet is too hot, temperate, or too cold at its current distance. */
+  public readonly planetStatusProperty: TReadOnlyProperty<PlanetStatus>;
+
+  /** Whether a real-system preset locks the star-mass selector. */
+  public readonly isStarMassLockedProperty: TReadOnlyProperty<boolean>;
+
+  /** Age (years) when tidal locking occurs; Infinity if never / not shown. */
+  public readonly timePlanetTidallyLockedProperty: TReadOnlyProperty<number>;
+
+  /** Age (years) when the planet is destroyed by the expanding star. */
+  public readonly timePlanetDestroyedProperty: TReadOnlyProperty<number>;
+
+  /** Whether the planet is tidally locked at the current age. */
+  public readonly isPlanetTidallyLockedProperty: TReadOnlyProperty<boolean>;
+
+  /** Whether the planet has been destroyed at the current age. */
+  public readonly isPlanetDestroyedProperty: TReadOnlyProperty<boolean>;
+
+  /** Discrete pericenter distances (AU) when a real system is selected. */
+  public readonly realSystemPlanetDistancesProperty: TReadOnlyProperty<readonly number[]>;
+
+  public constructor() {
+    this.timer = new TimeModel();
+
+    this.selectedStarIndexProperty = new NumberProperty(findSunStarIndex(), {
+      numberType: "Integer",
+      range: new Range(0, SHZ_STARS.length - 1),
+    });
+
+    const initialStar = getStar(findSunStarIndex());
+    this.ageProperty = new NumberProperty(0, {
+      range: new Range(0, initialStar.timespan),
+    });
+
+    this.planetDistanceProperty = new NumberProperty(1.0, {
+      range: PLANET_DISTANCE_RANGE_AU,
+      units: "AU",
+    });
+
+    this.hzModeProperty = new StringUnionProperty<HzMode>("optimistic", {
+      validValues: ["optimistic", "conservative"],
+    });
+
+    this.showReferenceOrbitsProperty = new BooleanProperty(true);
+
+    this.showGridProperty = new BooleanProperty(false);
+
+    this.animationRateProperty = new NumberProperty(1, {
+      range: new Range(0.1, 2),
+    });
+
+    this.selectedRealSystemIdProperty = new StringUnionProperty<RealSystemId>(NONE_REAL_SYSTEM_ID, {
+      validValues: [...REAL_SYSTEM_IDS],
+    });
+
+    this.diagramZoomLevelProperty = new NumberProperty(SHZ_DIAGRAM_DEFAULT_ZOOM_LEVEL, {
+      numberType: "Integer",
+      range: new Range(0, SHZ_DIAGRAM_ZOOM_AU_VALUES.length - 1),
+    });
+
+    this.starTimespanProperty = new DerivedProperty(
+      [this.selectedStarIndexProperty],
+      (index) => getStar(index).timespan,
+    );
+
+    this.catalogStarMassProperty = new DerivedProperty(
+      [this.selectedStarIndexProperty],
+      (index) => getStar(index).mass,
+    );
+
+    this.currentStarMassProperty = new DerivedProperty(
+      [this.selectedStarIndexProperty, this.ageProperty],
+      (index, age) => sampleStar(getStar(index), age).mass,
+    );
+
+    this.effectivePlanetDistanceProperty = new DerivedProperty(
+      [this.planetDistanceProperty, this.catalogStarMassProperty, this.currentStarMassProperty],
+      (initialDistance, catalogMass, currentMass) =>
+        effectivePlanetDistanceAU(initialDistance, catalogMass, currentMass),
+    );
+
+    this.displayPlanetDistanceProperty = new NumberProperty(1, {
+      range: PLANET_DISTANCE_RANGE_AU,
+      units: "AU",
+    });
+
+    let syncingDisplayDistance = false;
+
+    const syncDisplayPlanetDistanceFromEffective = (distance: number): void => {
+      if (syncingDisplayDistance) {
+        return;
+      }
+      syncingDisplayDistance = true;
+      const range = this.getEffectivePlanetDistanceRange();
+      const clamped = range.constrainValue(distance);
+      this.displayPlanetDistanceProperty.value = clamped;
+      if (clamped !== distance) {
+        const star = getStar(this.selectedStarIndexProperty.value);
+        const currentMass = sampleStar(star, this.ageProperty.value).mass;
+        this.planetDistanceProperty.value = initialPlanetDistanceAU(clamped, star.mass, currentMass);
+      }
+      syncingDisplayDistance = false;
+    };
+
+    this.effectivePlanetDistanceProperty.link(syncDisplayPlanetDistanceFromEffective);
+    this.displayPlanetDistanceProperty.lazyLink((distance) => {
+      if (syncingDisplayDistance) {
+        return;
+      }
+      syncingDisplayDistance = true;
+      this.setEffectivePlanetDistanceAU(distance);
+      syncingDisplayDistance = false;
+    });
+
+    const updateDisplayPlanetDistanceRange = (): void => {
+      this.displayPlanetDistanceProperty.rangeProperty.value = this.getEffectivePlanetDistanceRange();
+      syncDisplayPlanetDistanceFromEffective(this.effectivePlanetDistanceProperty.value);
+    };
+    this.selectedStarIndexProperty.link(updateDisplayPlanetDistanceRange);
+    this.ageProperty.link(updateDisplayPlanetDistanceRange);
+
+    this.selectedStarIndexProperty.link((index) => {
+      const star = getStar(index);
+      this.ageProperty.rangeProperty.value = new Range(0, star.timespan);
+      if (this.ageProperty.value > star.timespan) {
+        this.ageProperty.value = star.timespan;
+      }
+    });
+
+    this.luminosityProperty = new DerivedProperty([this.selectedStarIndexProperty, this.ageProperty], (index, age) =>
+      luminosity(sampleStar(getStar(index), age)),
+    );
+
+    this.temperatureProperty = new DerivedProperty([this.selectedStarIndexProperty, this.ageProperty], (index, age) =>
+      temperatureK(sampleStar(getStar(index), age)),
+    );
+
+    this.radiusSolarProperty = new DerivedProperty([this.selectedStarIndexProperty, this.ageProperty], (index, age) =>
+      radiusSolar(sampleStar(getStar(index), age)),
+    );
+
+    this.hzInnerProperty = new DerivedProperty(
+      [this.luminosityProperty, this.hzModeProperty],
+      (luminositySolar, mode) => Math.sqrt(luminositySolar) * HZ_COEFFICIENTS[mode].inner,
+    );
+
+    this.hzOuterProperty = new DerivedProperty(
+      [this.luminosityProperty, this.hzModeProperty],
+      (luminositySolar, mode) => Math.sqrt(luminositySolar) * HZ_COEFFICIENTS[mode].outer,
+    );
+
+    this.planetStatusProperty = new DerivedProperty(
+      [this.effectivePlanetDistanceProperty, this.hzInnerProperty, this.hzOuterProperty],
+      (distance, hzInner, hzOuter) => classifyPlanetDistance(distance, hzInner, hzOuter),
+    );
+
+    this.isStarMassLockedProperty = new DerivedProperty(
+      [this.selectedRealSystemIdProperty],
+      (systemId) => systemId !== NONE_REAL_SYSTEM_ID,
+    );
+
+    this.realSystemPlanetDistancesProperty = new DerivedProperty([this.selectedRealSystemIdProperty], (systemId) => {
+      const system = findRealSystem(systemId);
+      if (system === null) {
+        return [];
+      }
+      return system.planets.map(planetPericenterAU);
+    });
+
+    this.selectedRealSystemIdProperty.link((systemId) => {
+      const system = findRealSystem(systemId);
+      if (system === null) {
+        return;
+      }
+      this.selectedStarIndexProperty.value = findStarIndexByMass(system.massSolar);
+      const firstPlanet = system.planets[0];
+      if (firstPlanet !== undefined) {
+        this.planetDistanceProperty.value = planetPericenterAU(firstPlanet);
+      }
+    });
+
+    this.timePlanetDestroyedProperty = new DerivedProperty(
+      [this.selectedStarIndexProperty, this.planetDistanceProperty],
+      (index, initialDistance) => computePlanetDestructionTimeYears(getStar(index), initialDistance),
+    );
+
+    this.timePlanetTidallyLockedProperty = new DerivedProperty(
+      [this.selectedStarIndexProperty, this.planetDistanceProperty, this.starTimespanProperty],
+      (index, initialDistance, timespan) => {
+        const star = getStar(index);
+        let lockTime = computeTidalLockTimeYears(star.mass, initialDistance);
+        if (!isTidalLockMarkerVisible(lockTime, timespan, SHZ_TIMELINE_WIDTH_PX)) {
+          lockTime = Number.POSITIVE_INFINITY;
+        }
+        return lockTime;
+      },
+    );
+
+    this.isPlanetTidallyLockedProperty = new DerivedProperty(
+      [this.ageProperty, this.timePlanetTidallyLockedProperty],
+      (age, lockTime) => Number.isFinite(lockTime) && age >= lockTime,
+    );
+
+    this.isPlanetDestroyedProperty = new DerivedProperty(
+      [this.ageProperty, this.timePlanetDestroyedProperty],
+      (age, destroyTime) => Number.isFinite(destroyTime) && age >= destroyTime,
+    );
+  }
+
+  /** Sets the zero-age planet distance from a displayed (effective) distance. */
+  public setEffectivePlanetDistanceAU(effectiveDistanceAU: number): void {
+    const star = getStar(this.selectedStarIndexProperty.value);
+    const currentMass = sampleStar(star, this.ageProperty.value).mass;
+    const constrained = this.getEffectivePlanetDistanceRange().constrainValue(effectiveDistanceAU);
+    this.planetDistanceProperty.value = initialPlanetDistanceAU(constrained, star.mass, currentMass);
+  }
+
+  /** Mass-scaled display range for the planet-distance control (Flash drag limits). */
+  public getEffectivePlanetDistanceRange(): Range {
+    const star = getStar(this.selectedStarIndexProperty.value);
+    const currentMass = sampleStar(star, this.ageProperty.value).mass;
+    return effectivePlanetDistanceRangeAU(star.mass, currentMass);
+  }
+
+  public reset(): void {
+    this.timer.reset();
+    this.selectedStarIndexProperty.reset();
+    this.ageProperty.reset();
+    this.planetDistanceProperty.reset();
+    this.displayPlanetDistanceProperty.reset();
+    this.hzModeProperty.reset();
+    this.showReferenceOrbitsProperty.reset();
+    this.showGridProperty.reset();
+    this.animationRateProperty.reset();
+    this.selectedRealSystemIdProperty.reset();
+    this.diagramZoomLevelProperty.reset();
+  }
+
+  public step(dt: number): void {
+    if (!this.timer.isPlayingProperty.value) {
+      return;
+    }
+
+    const star = getStar(this.selectedStarIndexProperty.value);
+    const ageDeltaYears =
+      (dt / FULL_STAR_EVOLUTION_PLAYBACK_SECONDS) * star.timespan * this.animationRateProperty.value;
+    const nextAge = Math.min(star.timespan, this.ageProperty.value + ageDeltaYears);
+    this.ageProperty.value = nextAge;
+
+    if (nextAge >= star.timespan) {
+      this.timer.isPlayingProperty.value = false;
+    }
+  }
+
+  public stepTimeline(): void {
+    const star = getStar(this.selectedStarIndexProperty.value);
+    const stepYears = star.timespan / 200;
+    this.ageProperty.value = Math.min(star.timespan, this.ageProperty.value + stepYears);
+  }
+
+  public zoomDiagramIn(): void {
+    this.diagramZoomLevelProperty.value = Math.max(0, this.diagramZoomLevelProperty.value - 1);
+  }
+
+  public zoomDiagramOut(): void {
+    this.diagramZoomLevelProperty.value = Math.min(
+      SHZ_DIAGRAM_ZOOM_AU_VALUES.length - 1,
+      this.diagramZoomLevelProperty.value + 1,
+    );
   }
 }

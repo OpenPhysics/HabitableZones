@@ -2,37 +2,83 @@
  * CircumstellarScreenSummaryContent.ts
  *
  * The accessible screen summary read by screen readers (SceneryStack's
- * Interactive Description). It appears at the top of the parallel DOM and gives
- * a non-visual user a way to orient themselves and to re-read the simulation's
- * current state at any time.
- *
- * A summary has four regions (all optional, but provide at least the first
- * three in every sim for consistency across OpenPhysics):
- *   - playAreaContent       — what the play area contains
- *   - controlAreaContent    — what the controls do
- *   - currentDetailsContent — a LIVE paragraph describing current state
- *   - interactionHintContent — a short hint on how to get started
- *
- * ── Making "current details" live ─────────────────────────────────────────────
- * The template has no model state, so currentDetails is a static string. In a
- * real sim, build a DerivedProperty over the relevant model Properties and pass
- * it as `currentDetailsContent` so the paragraph updates as the sim runs.
- * See LunarLander/src/.../LunarLanderScreenSummaryContent.ts for the pattern.
+ * Interactive Description). currentDetailsContent is a live DerivedProperty
+ * built from CircumstellarModel state via StringUtils.fillIn, so it always
+ * describes the star, its habitable zone, and the planet's current status.
  */
+import { DerivedProperty } from "scenerystack/axon";
+import { StringUtils } from "scenerystack/phetcommon";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { CircumstellarModel } from "../model/CircumstellarModel.js";
+import { SHZ_STARS } from "../model/shzStars.js";
 
 export class CircumstellarScreenSummaryContent extends ScreenSummaryContent {
-  // `model` is unused in the template but kept in the signature so real sims can
-  // derive a live currentDetailsContent from it without changing call sites.
-  public constructor(_model: CircumstellarModel) {
+  public constructor(model: CircumstellarModel) {
+    const strings = StringManager.getInstance().getCircumstellarStrings();
     const a11y = StringManager.getInstance().getCircumstellarA11yStrings();
+
+    const currentDetailsProperty = new DerivedProperty(
+      [
+        a11y.currentDetailsPatternStringProperty,
+        model.selectedStarIndexProperty,
+        model.ageProperty,
+        model.temperatureProperty,
+        model.hzInnerProperty,
+        model.hzOuterProperty,
+        model.effectivePlanetDistanceProperty,
+        model.planetStatusProperty,
+        model.isPlanetDestroyedProperty,
+        model.isPlanetTidallyLockedProperty,
+        strings.status.tooHotStringProperty,
+        strings.status.temperateStringProperty,
+        strings.status.tooColdStringProperty,
+        strings.status.destroyedStringProperty,
+        strings.status.tidallyLockedStringProperty,
+      ],
+      (
+        pattern,
+        starIndex,
+        age,
+        temperature,
+        hzInner,
+        hzOuter,
+        distance,
+        status,
+        destroyed,
+        locked,
+        tooHot,
+        temperate,
+        tooCold,
+        destroyedLabel,
+        lockedLabel,
+      ) => {
+        const star = SHZ_STARS[starIndex];
+        const mass = star === undefined ? 0 : star.mass;
+        const ageLabel =
+          age >= 1e9 ? `${(age / 1e9).toFixed(1)} billion years` : `${(age / 1e6).toFixed(1)} million years`;
+        let statusLabel = status === "tooHot" ? tooHot : status === "tooCold" ? tooCold : temperate;
+        if (destroyed) {
+          statusLabel = destroyedLabel;
+        } else if (locked) {
+          statusLabel = lockedLabel;
+        }
+        return StringUtils.fillIn(pattern, {
+          mass: mass.toFixed(1),
+          age: ageLabel,
+          temperature: temperature.toFixed(0),
+          hzInner: hzInner.toFixed(2),
+          hzOuter: hzOuter.toFixed(2),
+          distance: distance.toFixed(2),
+          status: statusLabel,
+        });
+      },
+    );
 
     super({
       playAreaContent: a11y.screenSummary.playAreaStringProperty,
       controlAreaContent: a11y.screenSummary.controlAreaStringProperty,
-      currentDetailsContent: a11y.currentDetailsStringProperty,
+      currentDetailsContent: currentDetailsProperty,
       interactionHintContent: a11y.screenSummary.interactionHintStringProperty,
     });
   }

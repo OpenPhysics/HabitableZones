@@ -1,38 +1,45 @@
 /**
  * GalacticScreenSummaryContent.ts
  *
- * The accessible screen summary read by screen readers (SceneryStack's
- * Interactive Description). It appears at the top of the parallel DOM and gives
- * a non-visual user a way to orient themselves and to re-read the simulation's
- * current state at any time.
- *
- * A summary has four regions (all optional, but provide at least the first
- * three in every sim for consistency across OpenPhysics):
- *   - playAreaContent       — what the play area contains
- *   - controlAreaContent    — what the controls do
- *   - currentDetailsContent — a LIVE paragraph describing current state
- *   - interactionHintContent — a short hint on how to get started
- *
- * ── Making "current details" live ─────────────────────────────────────────────
- * The template has no model state, so currentDetails is a static string. In a
- * real sim, build a DerivedProperty over the relevant model Properties and pass
- * it as `currentDetailsContent` so the paragraph updates as the sim runs.
- * See LunarLander/src/.../LunarLanderScreenSummaryContent.ts for the pattern.
+ * Accessible screen summary for the Galactic screen with live current-details
+ * derived from GalacticModel state.
  */
+import { DerivedProperty } from "scenerystack/axon";
+import { StringUtils } from "scenerystack/phetcommon";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { GalacticModel } from "../model/GalacticModel.js";
 
 export class GalacticScreenSummaryContent extends ScreenSummaryContent {
-  // `model` is unused in the template but kept in the signature so real sims can
-  // derive a live currentDetailsContent from it without changing call sites.
-  public constructor(_model: GalacticModel) {
+  public constructor(model: GalacticModel) {
+    const strings = StringManager.getInstance().getGalacticStrings();
     const a11y = StringManager.getInstance().getGalacticA11yStrings();
+
+    const currentDetailsProperty = new DerivedProperty(
+      [
+        a11y.currentDetailsPatternStringProperty,
+        model.selectedRadiusProperty,
+        model.metallicityAtSelectedProperty,
+        model.riskAtSelectedProperty,
+        model.habitabilityAtSelectedProperty,
+        model.isInsideGhzProperty,
+        strings.readoutInsideGhzStringProperty,
+        strings.readoutOutsideGhzStringProperty,
+      ],
+      (pattern, radius, metallicity, riskValue, habitability, isInside, insideLabel, outsideLabel) =>
+        StringUtils.fillIn(pattern, {
+          radius: radius.toFixed(1),
+          metallicity: metallicity.toFixed(2),
+          risk: riskValue.toFixed(2),
+          habitability: habitability.toFixed(2),
+          ghzStatus: isInside ? insideLabel : outsideLabel,
+        }),
+    );
 
     super({
       playAreaContent: a11y.screenSummary.playAreaStringProperty,
       controlAreaContent: a11y.screenSummary.controlAreaStringProperty,
-      currentDetailsContent: a11y.currentDetailsStringProperty,
+      currentDetailsContent: currentDetailsProperty,
       interactionHintContent: a11y.screenSummary.interactionHintStringProperty,
     });
   }

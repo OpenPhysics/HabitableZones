@@ -15,7 +15,56 @@
     "showHabitableZone": "Afficher la zone habitable",
     "planet": "Planète",
     "unitsAu": "UA",
-    "unitsSolarLuminosities": "L☉"
+    "unitsSolarLuminosities": "L☉",
+    "unitsSolarMasses": "M☉",
+    "starMass": "Masse de l'étoile",
+    "hzOptimistic": "Optimiste",
+    "hzConservative": "Conservatrice",
+    "showReferenceOrbits": "Afficher les orbites de référence",
+    "statusReadoutPattern": "État : {{status}}",
+    "hrDiagramTitle": "Diagramme H-R",
+    "hrDiagramTemperatureAxis": "Température (K)",
+    "hrDiagramLuminosityAxis": "Luminosité (L☉)",
+    "timelineTitle": "Chronologie de l'évolution stellaire",
+    "habitabilityPlotTitle": "Habitabilité de la planète vs temps",
+    "realSystemLabel": "Système exoplanétaire réel",
+    "realSystemNone": "(aucun sélectionné)",
+    "realSystemHint": "Les planètes connues sont affichées sur le diagramme. Faites glisser le marqueur ou ajustez la distance pour explorer chaque orbite.",
+    "diagramZoom": "Zoom du diagramme",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "planetTidallyLocked": "Verrouillée",
+    "timelineTidalLockLabel": "Verrouillage de marée",
+    "timelineDestroyedLabel": "Détruite",
+    "generalSettingsTitle": "Paramètres généraux",
+    "diagramOptions": "options du diagramme",
+    "showScaleGrid": "afficher la grille d'échelle",
+    "showSolarSystemOrbits": "afficher les orbites du système solaire",
+    "starPlanetSettingsTitle": "Paramètres et propriétés de l'étoile et de la planète",
+    "initialStarMass": "masse initiale de l'étoile",
+    "starPropertiesNow": "propriétés de l'étoile maintenant :",
+    "massReadoutPattern": "masse : {{value}} M☉",
+    "luminosityReadoutPattern": "luminosité : {{value}} L☉",
+    "temperatureReadoutPattern": "température : {{value}} K",
+    "radiusReadoutPattern": "rayon : {{value}} R☉",
+    "initialPlanetDistance": "distance initiale de la planète",
+    "planetDistanceNowPattern": "distance de la planète maintenant : {{value}} UA",
+    "timelineControlsTitle": "Chronologie et commandes de simulation",
+    "timeSinceFormationPattern": "temps depuis la formation du système stellaire : {{value}}",
+    "run": "démarrer",
+    "rate": "vitesse",
+    "tooHotStrip": "trop chaud",
+    "tooColdStrip": "trop froid",
+    "epochStopFusing": "l'étoile cesse de fusionner l'H",
+    "epochWhiteDwarf": "l'étoile devient une naine blanche",
+    "epochPlanetDestroyed": "la planète est détruite",
+    "status": {
+      "tooHot": "Trop chaud",
+      "temperate": "Tempéré",
+      "tooCold": "Trop froid",
+      "destroyed": "Détruite",
+      "tidallyLocked": "Verrouillée par les marées"
+    }
   },
   "galactic": {
     "distanceFromCenter": "Distance du centre galactique",
@@ -24,7 +73,16 @@
     "starFormationRate": "Taux de formation d'étoiles",
     "galacticHabitableZone": "Zone habitable galactique",
     "unitsKiloparsecs": "kpc",
-    "unitsSolarMetallicities": "Z☉"
+    "unitsSolarMetallicities": "Z☉",
+    "readoutMetallicityPattern": "Métallicité : {{value}}",
+    "readoutRiskPattern": "Risque catastrophique : {{value}}",
+    "readoutHabitabilityPattern": "Habitabilité : {{value}}",
+    "readoutInsideGhz": "Dans la zone habitable galactique",
+    "readoutOutsideGhz": "En dehors de la zone habitable galactique",
+    "plots": {
+      "metallicityTitle": "Abondance en éléments lourds",
+      "riskTitle": "Probabilité d'événement catastrophique"
+    }
   },
   "a11y": {
     "circumstellar": {
@@ -33,9 +91,17 @@
         "controlArea": "La zone de contrôle comporte des commandes pour l'étoile et l'orbite de la planète, ainsi qu'un bouton Tout réinitialiser qui ramène l'écran à son état initial.",
         "interactionHint": "Ajustez l'étoile et l'orbite pour voir comment la zone habitable circumstellaire change."
       },
-      "currentDetails": "L'écran est dans son état initial.",
+      "currentDetailsPattern": "L'étoile sélectionnée a une masse de {{mass}} masses solaires et un âge de {{age}}. Sa température effective est {{temperature}} kelvins. Sa zone habitable s'étend de {{hzInner}} à {{hzOuter}} unités astronomiques. La planète orbite à {{distance}} unités astronomiques et est actuellement {{status}}.",
       "controls": {
-        "exampleControl": "Contrôle d'exemple"
+        "starSelector": "Masse de l'étoile",
+        "planetDistanceControl": "Distance de la planète",
+        "hzModeSelector": "Mode de zone habitable",
+        "showOrbitsCheckbox": "Afficher les orbites de référence",
+        "planetDraggable": "Planète",
+        "timelineCursor": "Âge stellaire",
+        "realSystemSelector": "Système exoplanétaire réel",
+        "zoomIn": "Zoom avant sur le diagramme",
+        "zoomOut": "Zoom arrière sur le diagramme"
       }
     },
     "galactic": {
@@ -44,9 +110,12 @@
         "controlArea": "La zone de contrôle comporte des commandes pour les facteurs qui régissent l'habitabilité galactique, ainsi qu'un bouton Tout réinitialiser qui ramène l'écran à son état initial.",
         "interactionHint": "Ajustez les facteurs pour voir comment la zone habitable galactique change."
       },
-      "currentDetails": "L'écran est dans son état initial.",
+      "currentDetailsPattern": "Le rayon sélectionné est {{radius}} kiloparsecs du centre galactique. La métallicité est {{metallicity}}, le risque catastrophique est {{risk}} et l'habitabilité est {{habitability}}. L'emplacement est {{ghzStatus}}.",
       "controls": {
-        "exampleControl": "Contrôle d'exemple"
+        "radiusControl": "Rayon galactocentrique",
+        "radiusCursor": "Rayon sélectionné sur le disque galactique",
+        "metallicityPlotCursor": "Rayon sélectionné sur le graphique de métallicité",
+        "riskPlotCursor": "Rayon sélectionné sur le graphique de risque"
       }
     }
   },

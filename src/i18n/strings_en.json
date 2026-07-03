@@ -15,7 +15,56 @@
     "showHabitableZone": "Show Habitable Zone",
     "planet": "Planet",
     "unitsAu": "AU",
-    "unitsSolarLuminosities": "L☉"
+    "unitsSolarLuminosities": "L☉",
+    "unitsSolarMasses": "M☉",
+    "starMass": "Star Mass",
+    "hzOptimistic": "Optimistic",
+    "hzConservative": "Conservative",
+    "showReferenceOrbits": "Show Reference Orbits",
+    "statusReadoutPattern": "Status: {{status}}",
+    "hrDiagramTitle": "H-R Diagram",
+    "hrDiagramTemperatureAxis": "Temperature (K)",
+    "hrDiagramLuminosityAxis": "Luminosity (L☉)",
+    "timelineTitle": "Stellar Evolution Timeline",
+    "habitabilityPlotTitle": "Planet Habitability vs Time",
+    "realSystemLabel": "Real Exoplanet System",
+    "realSystemNone": "(none selected)",
+    "realSystemHint": "Known planets are shown on the diagram. Drag the planet marker or adjust distance to explore each orbit.",
+    "diagramZoom": "Diagram Zoom",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "planetTidallyLocked": "Locked",
+    "timelineTidalLockLabel": "Tidal Lock",
+    "timelineDestroyedLabel": "Destroyed",
+    "generalSettingsTitle": "General Settings",
+    "diagramOptions": "diagram options",
+    "showScaleGrid": "show scale grid",
+    "showSolarSystemOrbits": "show solar system orbits",
+    "starPlanetSettingsTitle": "Star and Planet Settings and Properties",
+    "initialStarMass": "initial star mass",
+    "starPropertiesNow": "star properties now:",
+    "massReadoutPattern": "mass: {{value}} M☉",
+    "luminosityReadoutPattern": "luminosity: {{value}} L☉",
+    "temperatureReadoutPattern": "temperature: {{value}} K",
+    "radiusReadoutPattern": "radius: {{value}} R☉",
+    "initialPlanetDistance": "initial planet distance",
+    "planetDistanceNowPattern": "planet distance now: {{value}} AU",
+    "timelineControlsTitle": "Timeline and Simulation Controls",
+    "timeSinceFormationPattern": "time since star system formation: {{value}}",
+    "run": "run",
+    "rate": "rate",
+    "tooHotStrip": "too hot",
+    "tooColdStrip": "too cold",
+    "epochStopFusing": "star stops fusing H",
+    "epochWhiteDwarf": "star becomes white dwarf",
+    "epochPlanetDestroyed": "planet is destroyed",
+    "status": {
+      "tooHot": "Too Hot",
+      "temperate": "Temperate",
+      "tooCold": "Too Cold",
+      "destroyed": "Destroyed",
+      "tidallyLocked": "Tidally Locked"
+    }
   },
   "galactic": {
     "distanceFromCenter": "Distance from Galactic Center",
@@ -24,7 +73,16 @@
     "starFormationRate": "Star Formation Rate",
     "galacticHabitableZone": "Galactic Habitable Zone",
     "unitsKiloparsecs": "kpc",
-    "unitsSolarMetallicities": "Z☉"
+    "unitsSolarMetallicities": "Z☉",
+    "readoutMetallicityPattern": "Metallicity: {{value}}",
+    "readoutRiskPattern": "Catastrophic Risk: {{value}}",
+    "readoutHabitabilityPattern": "Habitability: {{value}}",
+    "readoutInsideGhz": "Inside the galactic habitable zone",
+    "readoutOutsideGhz": "Outside the galactic habitable zone",
+    "plots": {
+      "metallicityTitle": "Heavy Elements Abundance",
+      "riskTitle": "Catastrophic Event Probability"
+    }
   },
   "a11y": {
     "circumstellar": {
@@ -33,9 +91,17 @@
         "controlArea": "The control area has controls for the star and the planet's orbit, plus a Reset All button that returns the screen to its starting state.",
         "interactionHint": "Adjust the star and the orbit to see how the circumstellar habitable zone changes."
       },
-      "currentDetails": "The screen is in its initial state.",
+      "currentDetailsPattern": "The selected star has a mass of {{mass}} solar masses and an age of {{age}}. Its effective temperature is {{temperature}} kelvin. Its habitable zone spans {{hzInner}} to {{hzOuter}} astronomical units. The planet orbits at {{distance}} astronomical units and is currently {{status}}.",
       "controls": {
-        "exampleControl": "Example control"
+        "starSelector": "Star Mass",
+        "planetDistanceControl": "Planet Distance",
+        "hzModeSelector": "Habitable Zone Mode",
+        "showOrbitsCheckbox": "Show Reference Orbits",
+        "planetDraggable": "Planet",
+        "timelineCursor": "Stellar Age",
+        "realSystemSelector": "Real Exoplanet System",
+        "zoomIn": "Zoom In on Diagram",
+        "zoomOut": "Zoom Out on Diagram"
       }
     },
     "galactic": {
@@ -44,9 +110,12 @@
         "controlArea": "The control area has controls for the factors that govern galactic habitability, plus a Reset All button that returns the screen to its starting state.",
         "interactionHint": "Adjust the factors to see how the galactic habitable zone changes."
       },
-      "currentDetails": "The screen is in its initial state.",
+      "currentDetailsPattern": "The selected radius is {{radius}} kiloparsecs from the galactic center. Metallicity is {{metallicity}}, catastrophic risk is {{risk}}, and habitability is {{habitability}}. The location is {{ghzStatus}}.",
       "controls": {
-        "exampleControl": "Example control"
+        "radiusControl": "Galactocentric Radius",
+        "radiusCursor": "Selected Radius on Galaxy Disc",
+        "metallicityPlotCursor": "Selected Radius on Metallicity Plot",
+        "riskPlotCursor": "Selected Radius on Risk Plot"
       }
     }
   },

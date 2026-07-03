@@ -155,6 +155,78 @@ const HabitableZonesColors = {
       projector: "#006064",
     },
   ),
+
+  /**
+   * Soft glow drawn behind the star disc.
+   * Warm gold default; muted amber in projector mode.
+   */
+  starGlowColorProperty: new ProfileColorProperty(HabitableZonesNamespace, "starGlow", {
+    default: "rgba(255, 224, 102, 0.35)",
+    projector: "rgba(200, 112, 0, 0.25)",
+  }),
+
+  /**
+   * Planet color when it is too close to its star (inside the HZ inner edge).
+   * Bright red default; deep red in projector mode.
+   */
+  tooHotColorProperty: new ProfileColorProperty(HabitableZonesNamespace, "tooHot", {
+    default: "#ef5350",
+    projector: "#b71c1c",
+  }),
+
+  /**
+   * Planet color when it sits within the habitable zone.
+   * Bright green default; deep green in projector mode.
+   */
+  temperateColorProperty: new ProfileColorProperty(HabitableZonesNamespace, "temperate", {
+    default: "#66bb6a",
+    projector: "#1b5e20",
+  }),
+
+  /**
+   * Planet color when it is too far from its star (outside the HZ outer edge).
+   * Light blue default; deep blue in projector mode.
+   */
+  tooColdColorProperty: new ProfileColorProperty(HabitableZonesNamespace, "tooCold", {
+    default: "#42a5f5",
+    projector: "#0d47a1",
+  }),
+
+  /**
+   * Curve color for the galactic metallicity-vs-radius plot.
+   * Amber default; dark amber in projector mode.
+   */
+  metallicityCurveColorProperty: new ProfileColorProperty(HabitableZonesNamespace, "metallicityCurve", {
+    default: "#ffca28",
+    projector: "#c87000",
+  }),
+
+  /**
+   * Curve color for the galactic catastrophic-risk-vs-radius plot.
+   * Coral red default; deep red in projector mode.
+   */
+  riskCurveColorProperty: new ProfileColorProperty(HabitableZonesNamespace, "riskCurve", {
+    default: "#ff7043",
+    projector: "#bf360c",
+  }),
+
+  /**
+   * Fill for the galactic habitable zone band shared by the disc + plots.
+   * Translucent teal default; slightly darker in projector mode.
+   */
+  ghzBandColorProperty: new ProfileColorProperty(HabitableZonesNamespace, "ghzBand", {
+    default: "rgba(0, 188, 212, 0.20)",
+    projector: "rgba(0, 96, 100, 0.15)",
+  }),
+
+  /**
+   * Gridline / axis color shared by bamboo-based charts.
+   * Dim white default; medium gray in projector mode.
+   */
+  gridColorProperty: new ProfileColorProperty(HabitableZonesNamespace, "grid", {
+    default: "rgba(255, 255, 255, 0.25)",
+    projector: "rgba(0, 0, 0, 0.25)",
+  }),
 };
 
 export default HabitableZonesColors;
