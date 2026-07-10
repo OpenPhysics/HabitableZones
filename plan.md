@@ -2,9 +2,9 @@
 
 ## Context
 
-This repository is a **scaffold-only** SceneryStack port of the NAAP *Habitable
-Zones* lab (two screens). Today both screens are a placeholder label + Reset All —
-no model or physics. The goal of this plan is to implement the actual simulations.
+This repository is a SceneryStack port of the NAAP *Habitable Zones* lab (two
+screens). Circumstellar and Galactic models/views are implemented; this plan
+remains as the historical porting checklist and formula reference.
 
 We have three reference sources:
 

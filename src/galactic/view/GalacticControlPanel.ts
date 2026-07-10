@@ -5,6 +5,7 @@
  * metallicity, risk, and habitability at the selected radius.
  */
 import { DerivedProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { StringUtils } from "scenerystack/phetcommon";
 import { Text, VBox } from "scenerystack/scenery";
 import { NumberControl } from "scenerystack/scenery-phet";
@@ -36,20 +37,20 @@ export class GalacticControlPanel extends HabitableZonesPanel {
     const metallicityReadout = new Text(
       new DerivedProperty(
         [strings.readoutMetallicityPatternStringProperty, model.metallicityAtSelectedProperty],
-        (pattern, value) => StringUtils.fillIn(pattern, { value: value.toFixed(2) }),
+        (pattern, value) => StringUtils.fillIn(pattern, { value: toFixed(value, 2) }),
       ),
     );
 
     const riskReadout = new Text(
       new DerivedProperty([strings.readoutRiskPatternStringProperty, model.riskAtSelectedProperty], (pattern, value) =>
-        StringUtils.fillIn(pattern, { value: value.toFixed(2) }),
+        StringUtils.fillIn(pattern, { value: toFixed(value, 2) }),
       ),
     );
 
     const habitabilityReadout = new Text(
       new DerivedProperty(
         [strings.readoutHabitabilityPatternStringProperty, model.habitabilityAtSelectedProperty],
-        (pattern, value) => StringUtils.fillIn(pattern, { value: value.toFixed(2) }),
+        (pattern, value) => StringUtils.fillIn(pattern, { value: toFixed(value, 2) }),
       ),
     );
 

@@ -13,9 +13,10 @@
 import { DerivedProperty } from "scenerystack/axon";
 import { Dimension2, Range } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
-import { DragListener, HBox, Line, Node, Path, Rectangle, Text, VBox } from "scenerystack/scenery";
+import { DragListener, HBox, KeyboardListener, Line, Node, Path, Rectangle, Text, VBox } from "scenerystack/scenery";
 import { PhetFont, TimeControlNode } from "scenerystack/scenery-phet";
 import { HSlider } from "scenerystack/sun";
+import HabitableZonesHotkeyData from "../../common/HabitableZonesHotkeyData.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import { HZ_CONSERVATIVE, HZ_OPTIMISTIC, SHZ_TIMELINE_WIDTH_PX } from "../../HabitableZonesConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -59,6 +60,8 @@ function planetTempC(logRadius: number, logTemp: number, planetDistanceAU: numbe
 
 export class SHZTimelineNode extends Node {
   public readonly timelineCursor: Node;
+  public readonly rateSlider: HSlider;
+  public readonly timeControl: TimeControlNode;
 
   public constructor(model: CircumstellarModel) {
     super();
@@ -87,19 +90,20 @@ export class SHZTimelineNode extends Node {
       fill: HabitableZonesColors.textColorProperty,
     });
 
-    const rateSlider = new HSlider(model.animationRateProperty, new Range(0.1, 2), {
+    this.rateSlider = new HSlider(model.animationRateProperty, new Range(0.1, 2), {
       trackSize: new Dimension2(90, 3),
+      accessibleName: strings.rateStringProperty,
     });
     const rateControl = new HBox({
       spacing: 6,
       align: "center",
       children: [
         new Text(strings.rateStringProperty, { font: LABEL_FONT, fill: HabitableZonesColors.textColorProperty }),
-        rateSlider,
+        this.rateSlider,
       ],
     });
 
-    const timeControl = new TimeControlNode(model.timer.isPlayingProperty, {
+    this.timeControl = new TimeControlNode(model.timer.isPlayingProperty, {
       playPauseStepButtonOptions: {
         stepForwardButtonOptions: {
           listener: () => model.stepTimeline(),
@@ -110,7 +114,7 @@ export class SHZTimelineNode extends Node {
     const header = new HBox({
       spacing: 24,
       align: "center",
-      children: [new VBox({ align: "left", spacing: 3, children: [title, readout] }), rateControl, timeControl],
+      children: [new VBox({ align: "left", spacing: 3, children: [title, readout] }), rateControl, this.timeControl],
     });
     header.left = 0;
     header.top = 0;
@@ -317,6 +321,21 @@ export class SHZTimelineNode extends Node {
           const localPoint = cursorLine.globalToParentPoint(event.pointer.point);
           const x = Math.max(0, Math.min(TIMELINE_WIDTH, localPoint.x));
           model.ageProperty.value = xToTime(x, star.timespan);
+        },
+      }),
+    );
+    cursorLine.addInputListener(
+      new KeyboardListener({
+        keys: [...HabitableZonesHotkeyData.HORIZONTAL_ARROW_KEYS],
+        fireOnHold: true,
+        fire: (_event, keysPressed) => {
+          const star = SHZ_STARS[model.selectedStarIndexProperty.value];
+          if (star === undefined || star.timespan === 0) {
+            return;
+          }
+          const step = star.timespan / 100;
+          const delta = keysPressed === "arrowLeft" ? -step : keysPressed === "arrowRight" ? step : 0;
+          model.ageProperty.value = Math.max(0, Math.min(star.timespan, model.ageProperty.value + delta));
         },
       }),
     );

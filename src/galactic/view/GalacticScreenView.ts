@@ -5,7 +5,7 @@
  * risk plots, and a control panel — all sharing one selected-radius Property.
  */
 
-import { Node, Rectangle, VBox } from "scenerystack/scenery";
+import { Rectangle, VBox } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { ScreenView } from "scenerystack/sim";
@@ -77,17 +77,8 @@ export class GalacticScreenView extends ScreenView {
     });
     this.addChild(resetAllButton);
 
-    this.addChild(
-      new Node({
-        pdomOrder: [
-          controlPanel.radiusControl,
-          discNode.radiusCursor,
-          metallicityPlot.plotCursor,
-          riskPlot.plotCursor,
-          resetAllButton,
-        ],
-      }),
-    );
+    this.pdomPlayAreaNode.pdomOrder = [discNode.radiusCursor, metallicityPlot.plotCursor, riskPlot.plotCursor];
+    this.pdomControlAreaNode.pdomOrder = [controlPanel.radiusControl, resetAllButton];
   }
 
   public reset(): void {

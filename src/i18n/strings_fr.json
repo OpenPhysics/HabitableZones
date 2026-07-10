@@ -120,7 +120,16 @@
     }
   },
   "preferences": {
-    "title": "Simulation",
-    "exampleToggle": "Exemple de bascule"
+    "title": "Simulation"
+  },
+  "keyboardHelp": {
+    "circumstellar": "Circumstellaire",
+    "galactic": "Galactique",
+    "adjustStellarAge": "Ajuster l'âge stellaire",
+    "adjustStellarAgeDescription": "Les flèches gauche et droite déplacent le curseur de la chronologie pour changer l'âge de l'étoile.",
+    "adjustGalacticRadius": "Ajuster le rayon galactique",
+    "adjustGalacticRadiusDescription": "Les flèches gauche et droite changent le rayon galactocentrique sélectionné.",
+    "movePlanet": "Déplacer la planète",
+    "movePlanetDescription": "Avec la planète focalisée, utilisez les flèches pour changer sa distance orbitale."
   }
 }

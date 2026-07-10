@@ -6,6 +6,7 @@
  * habitable-zone mode, a live star-properties readout, and a status readout.
  */
 import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { StringUtils } from "scenerystack/phetcommon";
 import { HBox, type Node, Text, VBox } from "scenerystack/scenery";
 import { NumberControl, PhetFont } from "scenerystack/scenery-phet";
@@ -114,7 +115,7 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
       decimals: number,
     ): Text => {
       const textProperty = new DerivedProperty([patternProperty, valueProperty], (pattern, value) =>
-        StringUtils.fillIn(pattern, { value: value.toFixed(decimals) }),
+        StringUtils.fillIn(pattern, { value: toFixed(value, decimals) }),
       );
       return new Text(textProperty, { font: READOUT_FONT, fill: HabitableZonesColors.textColorProperty });
     };
@@ -136,7 +137,7 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
 
     const distanceNowProperty = new DerivedProperty(
       [strings.planetDistanceNowPatternStringProperty, model.effectivePlanetDistanceProperty],
-      (pattern, distance) => StringUtils.fillIn(pattern, { value: distance.toFixed(3) }),
+      (pattern, distance) => StringUtils.fillIn(pattern, { value: toFixed(distance, 3) }),
     );
 
     const statusTextProperty = new DerivedProperty(

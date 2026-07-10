@@ -6,8 +6,9 @@
  */
 import { Vector2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Circle, DragListener, Line, Node } from "scenerystack/scenery";
+import { Circle, DragListener, KeyboardListener, Line, Node } from "scenerystack/scenery";
 import { ShadedSphereNode } from "scenerystack/scenery-phet";
+import HabitableZonesHotkeyData from "../../common/HabitableZonesHotkeyData.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import {
   GALACTIC_DISC_PIXELS_PER_KPC,
@@ -16,6 +17,8 @@ import {
 } from "../../HabitableZonesConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { GalacticModel } from "../model/GalacticModel.js";
+
+const RADIUS_KEYBOARD_STEP_KPC = 0.5;
 
 const DISC_OUTER_KPC = GALACTIC_RADIUS_RANGE_KPC.max;
 
@@ -64,9 +67,6 @@ export class MilkyWayDiscNode extends Node {
       stroke: HabitableZonesColors.accentColorProperty,
       lineWidth: 2,
       cursor: "pointer",
-      tagName: "div",
-      focusable: true,
-      accessibleName: a11y.controls.radiusCursorStringProperty,
     });
     model.selectedRadiusProperty.link((radius) => {
       selectedRing.radius = modelViewTransform.modelToViewDeltaX(radius);
@@ -76,20 +76,37 @@ export class MilkyWayDiscNode extends Node {
     const radialHandle = new Circle(6, {
       fill: HabitableZonesColors.accentColorProperty,
       cursor: "pointer",
+      tagName: "div",
+      focusable: true,
+      accessibleName: a11y.controls.radiusCursorStringProperty,
     });
     model.selectedRadiusProperty.link((radius) => {
       radialHandle.x = modelViewTransform.modelToViewX(radius);
     });
     this.addChild(radialHandle);
 
+    const setRadiusFromLocalPoint = (local: Vector2): void => {
+      model.selectedRadiusProperty.value = GALACTIC_RADIUS_RANGE_KPC.constrainValue(
+        Math.hypot(local.x, local.y) / GALACTIC_DISC_PIXELS_PER_KPC,
+      );
+    };
+
     radialHandle.addInputListener(
       new DragListener({
         drag: (event) => {
-          const local = this.globalToParentPoint(event.pointer.point);
-          const radiusKpc = GALACTIC_RADIUS_RANGE_KPC.constrainValue(
-            Math.hypot(local.x, local.y) / GALACTIC_DISC_PIXELS_PER_KPC,
+          setRadiusFromLocalPoint(this.globalToParentPoint(event.pointer.point));
+        },
+      }),
+    );
+    radialHandle.addInputListener(
+      new KeyboardListener({
+        keys: [...HabitableZonesHotkeyData.HORIZONTAL_ARROW_KEYS],
+        fireOnHold: true,
+        fire: (_event, keysPressed) => {
+          const delta = keysPressed === "arrowLeft" ? -RADIUS_KEYBOARD_STEP_KPC : RADIUS_KEYBOARD_STEP_KPC;
+          model.selectedRadiusProperty.value = GALACTIC_RADIUS_RANGE_KPC.constrainValue(
+            model.selectedRadiusProperty.value + delta,
           );
-          model.selectedRadiusProperty.value = radiusKpc;
         },
       }),
     );

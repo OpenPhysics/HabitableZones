@@ -19,12 +19,15 @@ import { Range, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { Orientation } from "scenerystack/phet-core";
 import type { ProfileColorProperty } from "scenerystack/scenery";
-import { DragListener, Line, Node, Path, Text } from "scenerystack/scenery";
+import { DragListener, KeyboardListener, Line, Node, Path, Text } from "scenerystack/scenery";
 import { PhetFont } from "scenerystack/scenery-phet";
+import HabitableZonesHotkeyData from "../../common/HabitableZonesHotkeyData.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import { GALACTIC_RADIUS_RANGE_KPC } from "../../HabitableZonesConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { GalacticModel } from "../model/GalacticModel.js";
+
+const RADIUS_KEYBOARD_STEP_KPC = 0.5;
 
 const PLOT_WIDTH = 280;
 const PLOT_HEIGHT = 100;
@@ -149,6 +152,18 @@ export class GalacticRadiusPlotNode extends Node {
           const local = plotContainer.globalToParentPoint(event.pointer.point);
           const radius = chartTransform.viewToModelX(Math.max(0, Math.min(PLOT_WIDTH, local.x)));
           model.selectedRadiusProperty.value = GALACTIC_RADIUS_RANGE_KPC.constrainValue(radius);
+        },
+      }),
+    );
+    cursorLine.addInputListener(
+      new KeyboardListener({
+        keys: [...HabitableZonesHotkeyData.HORIZONTAL_ARROW_KEYS],
+        fireOnHold: true,
+        fire: (_event, keysPressed) => {
+          const delta = keysPressed === "arrowLeft" ? -RADIUS_KEYBOARD_STEP_KPC : RADIUS_KEYBOARD_STEP_KPC;
+          model.selectedRadiusProperty.value = GALACTIC_RADIUS_RANGE_KPC.constrainValue(
+            model.selectedRadiusProperty.value + delta,
+          );
         },
       }),
     );

@@ -1,3 +1,4 @@
+import { toFixed } from "scenerystack/dot";
 /**
  * formatAge.ts
  *
@@ -7,10 +8,10 @@
 export function formatAgeYears(ageYears: number): string {
   const absAge = Math.abs(ageYears);
   if (absAge >= 1e9) {
-    return `${(ageYears / 1e9).toFixed(1)} Gy`;
+    return `${toFixed(ageYears / 1e9, 1)} Gy`;
   }
   if (absAge >= 1e6) {
-    return `${(ageYears / 1e6).toFixed(1)} My`;
+    return `${toFixed(ageYears / 1e6, 1)} My`;
   }
-  return `${ageYears.toFixed(0)} y`;
+  return `${toFixed(ageYears, 0)} y`;
 }

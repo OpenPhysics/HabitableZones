@@ -5,6 +5,7 @@
  * derived from GalacticModel state.
  */
 import { DerivedProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { StringUtils } from "scenerystack/phetcommon";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -28,10 +29,10 @@ export class GalacticScreenSummaryContent extends ScreenSummaryContent {
       ],
       (pattern, radius, metallicity, riskValue, habitability, isInside, insideLabel, outsideLabel) =>
         StringUtils.fillIn(pattern, {
-          radius: radius.toFixed(1),
-          metallicity: metallicity.toFixed(2),
-          risk: riskValue.toFixed(2),
-          habitability: habitability.toFixed(2),
+          radius: toFixed(radius, 1),
+          metallicity: toFixed(metallicity, 2),
+          risk: toFixed(riskValue, 2),
+          habitability: toFixed(habitability, 2),
           ghzStatus: isInside ? insideLabel : outsideLabel,
         }),
     );

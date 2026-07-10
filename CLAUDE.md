@@ -5,8 +5,9 @@ Sim-specific context for AI assistants. General SceneryStack guidance: [OpenPhys
 ## Project
 
 A two-screen SceneryStack simulation porting the NAAP **Habitable Zones** lab,
-scaffolded from `TemplateSingleSim`. **Scaffolding only** — both screens are a
-placeholder label + Reset All; no model/physics yet.
+scaffolded from `TemplateSingleSim`. Both screens are implemented: Circumstellar
+has a full star-evolution / HZ model; Galactic uses parametric habitability curves
+at a selected galactic radius.
 
 - **Circumstellar** (`src/circumstellar/`) — port of the NAAP *Circumstellar Habitable Zone Simulator* (`stellarHabitableZone.swf`): a star with its circumstellar habitable zone and an orbiting planet.
 - **Galactic** (`src/galactic/`) — port of the NAAP *Galactic / Milky Way Habitability Simulator* (`milkyWayHabitability.swf`): the band of the Milky Way that forms the galactic habitable zone.
@@ -26,10 +27,10 @@ Shared code keeps the `HabitableZones` prefix; per-screen code uses the
 | `src/i18n/StringManager.ts` | Singleton localized string accessor; per-screen name + a11y getters |
 | `src/main.ts` | Entry point; registers both screens with the Sim |
 | `src/circumstellar/CircumstellarScreen.ts` | `Screen<CircumstellarModel, CircumstellarScreenView>` wrapper |
-| `src/circumstellar/model/CircumstellarModel.ts` | Circumstellar screen state (scaffold) |
+| `src/circumstellar/model/CircumstellarModel.ts` | Circumstellar screen state (star catalog, HZ, timeline) |
 | `src/circumstellar/view/CircumstellarScreenView.ts` | Circumstellar visuals, `screenSummaryContent` + `pdomOrder` |
 | `src/galactic/GalacticScreen.ts` | `Screen<GalacticModel, GalacticScreenView>` wrapper |
-| `src/galactic/model/GalacticModel.ts` | Galactic screen state (scaffold) |
+| `src/galactic/model/GalacticModel.ts` | Galactic screen state (radius → metallicity/risk/habitability) |
 | `src/galactic/view/GalacticScreenView.ts` | Galactic visuals, `screenSummaryContent` + `pdomOrder` |
 | `src/preferences/habitableZonesQueryParameters.ts` | `QueryStringMachine` parameters |
 | `scripts/decompile-flash.ts` | Extract ActionScript from the NAAP Flash `.swf` sources via JPEXS FFDec (→ `NAAP/decompiled/`) |

@@ -29,7 +29,7 @@ jobs:
   compliance:
     uses: OpenPhysics/Baton/.github/workflows/shared-compliance-check.yml@main
     with:
-      repo-name: TemplateSingleSim
+      repo-name: HabitableZones
 
   dependency-review:
     if: github.event_name == 'pull_request'

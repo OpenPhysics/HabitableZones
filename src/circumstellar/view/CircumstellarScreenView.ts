@@ -82,23 +82,22 @@ export class CircumstellarScreenView extends ScreenView {
     });
     this.addChild(resetAllButton);
 
-    this.addChild(
-      new Node({
-        pdomOrder: [
-          generalSettingsPanel.showGridCheckbox,
-          generalSettingsPanel.showOrbitsCheckbox,
-          controlPanel.realSystemComboBox,
-          controlPanel.starComboBox,
-          controlPanel.planetDistanceControl,
-          controlPanel.zoomInButton,
-          controlPanel.zoomOutButton,
-          controlPanel.hzModeRadioButtonGroup,
-          diagramNode.planetNode,
-          timelineNode.timelineCursor,
-          resetAllButton,
-        ],
-      }),
-    );
+    // Play area: diagram planet + timeline cursor. Controls: panels, timeline
+    // playback, and Reset All (MovingMan / ACCESSIBILITY.md pattern).
+    this.pdomPlayAreaNode.pdomOrder = [diagramNode.planetNode, timelineNode.timelineCursor];
+    this.pdomControlAreaNode.pdomOrder = [
+      generalSettingsPanel.showGridCheckbox,
+      generalSettingsPanel.showOrbitsCheckbox,
+      controlPanel.realSystemComboBox,
+      controlPanel.starComboBox,
+      controlPanel.planetDistanceControl,
+      controlPanel.zoomInButton,
+      controlPanel.zoomOutButton,
+      controlPanel.hzModeRadioButtonGroup,
+      timelineNode.rateSlider,
+      timelineNode.timeControl,
+      resetAllButton,
+    ];
   }
 
   public reset(): void {

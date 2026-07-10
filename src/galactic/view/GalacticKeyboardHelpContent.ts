@@ -1,16 +1,30 @@
 /**
  * GalacticKeyboardHelpContent.ts
  *
- * Content for the keyboard-help dialog (the "?" button in the navigation bar).
- * The template's only interactions are buttons and Reset All, so a single
- * basic-actions section covers the available keyboard controls. Add a slider or
- * combo-box section here as the simulation grows.
+ * Keyboard Shortcuts dialog for the Galactic screen.
  */
 
-import { BasicActionsKeyboardHelpSection, TwoColumnKeyboardHelpContent } from "scenerystack/scenery-phet";
+import {
+  BasicActionsKeyboardHelpSection,
+  KeyboardHelpSection,
+  KeyboardHelpSectionRow,
+  SliderControlsKeyboardHelpSection,
+  TwoColumnKeyboardHelpContent,
+} from "scenerystack/scenery-phet";
+import HabitableZonesHotkeyData from "../../common/HabitableZonesHotkeyData.js";
+import { StringManager } from "../../i18n/StringManager.js";
 
 export class GalacticKeyboardHelpContent extends TwoColumnKeyboardHelpContent {
   public constructor() {
-    super([new BasicActionsKeyboardHelpSection()], []);
+    const kb = StringManager.getInstance().getKeyboardHelpStrings();
+
+    const radiusSection = new KeyboardHelpSection(kb.galacticStringProperty, [
+      KeyboardHelpSectionRow.fromHotkeyData(HabitableZonesHotkeyData.ADJUST_GALACTIC_RADIUS, {
+        labelStringProperty: kb.adjustGalacticRadiusStringProperty,
+        pdomLabelStringProperty: kb.adjustGalacticRadiusDescriptionStringProperty,
+      }),
+    ]);
+
+    super([radiusSection, new SliderControlsKeyboardHelpSection()], [new BasicActionsKeyboardHelpSection()]);
   }
 }

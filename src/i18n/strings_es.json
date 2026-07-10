@@ -120,7 +120,16 @@
     }
   },
   "preferences": {
-    "title": "Simulación",
-    "exampleToggle": "Ejemplo de alternancia"
+    "title": "Simulación"
+  },
+  "keyboardHelp": {
+    "circumstellar": "Circumestelar",
+    "galactic": "Galáctico",
+    "adjustStellarAge": "Ajustar la edad estelar",
+    "adjustStellarAgeDescription": "Las flechas izquierda y derecha mueven el cursor de la línea de tiempo para cambiar la edad de la estrella.",
+    "adjustGalacticRadius": "Ajustar el radio galáctico",
+    "adjustGalacticRadiusDescription": "Las flechas izquierda y derecha cambian el radio galactocéntrico seleccionado.",
+    "movePlanet": "Mover el planeta",
+    "movePlanetDescription": "Con el planeta enfocado, use las flechas para cambiar su distancia orbital."
   }
 }

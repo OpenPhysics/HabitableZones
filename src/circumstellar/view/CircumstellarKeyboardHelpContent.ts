@@ -1,16 +1,41 @@
 /**
  * CircumstellarKeyboardHelpContent.ts
  *
- * Content for the keyboard-help dialog (the "?" button in the navigation bar).
- * The template's only interactions are buttons and Reset All, so a single
- * basic-actions section covers the available keyboard controls. Add a slider or
- * combo-box section here as the simulation grows.
+ * Keyboard Shortcuts dialog for the Circumstellar screen.
  */
 
-import { BasicActionsKeyboardHelpSection, TwoColumnKeyboardHelpContent } from "scenerystack/scenery-phet";
+import {
+  BasicActionsKeyboardHelpSection,
+  ComboBoxKeyboardHelpSection,
+  KeyboardHelpSection,
+  KeyboardHelpSectionRow,
+  MoveDraggableItemsKeyboardHelpSection,
+  SliderControlsKeyboardHelpSection,
+  TimeControlsKeyboardHelpSection,
+  TwoColumnKeyboardHelpContent,
+} from "scenerystack/scenery-phet";
+import HabitableZonesHotkeyData from "../../common/HabitableZonesHotkeyData.js";
+import { StringManager } from "../../i18n/StringManager.js";
 
 export class CircumstellarKeyboardHelpContent extends TwoColumnKeyboardHelpContent {
   public constructor() {
-    super([new BasicActionsKeyboardHelpSection()], []);
+    const kb = StringManager.getInstance().getKeyboardHelpStrings();
+
+    const timelineSection = new KeyboardHelpSection(kb.circumstellarStringProperty, [
+      KeyboardHelpSectionRow.fromHotkeyData(HabitableZonesHotkeyData.ADJUST_STELLAR_AGE, {
+        labelStringProperty: kb.adjustStellarAgeStringProperty,
+        pdomLabelStringProperty: kb.adjustStellarAgeDescriptionStringProperty,
+      }),
+    ]);
+
+    super(
+      [
+        new MoveDraggableItemsKeyboardHelpSection(),
+        timelineSection,
+        new SliderControlsKeyboardHelpSection(),
+        new TimeControlsKeyboardHelpSection(),
+      ],
+      [new ComboBoxKeyboardHelpSection(), new BasicActionsKeyboardHelpSection()],
+    );
   }
 }

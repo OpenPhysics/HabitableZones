@@ -120,7 +120,16 @@
     }
   },
   "preferences": {
-    "title": "Simulation",
-    "exampleToggle": "Example Toggle"
+    "title": "Simulation"
+  },
+  "keyboardHelp": {
+    "circumstellar": "Circumstellar",
+    "galactic": "Galactic",
+    "adjustStellarAge": "Adjust stellar age",
+    "adjustStellarAgeDescription": "Left and right arrow keys move the timeline cursor to change the star's age.",
+    "adjustGalacticRadius": "Adjust galactic radius",
+    "adjustGalacticRadiusDescription": "Left and right arrow keys change the selected galactocentric radius.",
+    "movePlanet": "Move planet",
+    "movePlanetDescription": "With the planet focused, use the arrow keys to change its orbital distance."
   }
 }

@@ -126,4 +126,11 @@ export class StringManager {
   public getPreferences() {
     return stringProperties.preferences;
   }
+
+  /**
+   * Labels for custom rows in the Keyboard Shortcuts dialog.
+   */
+  public getKeyboardHelpStrings() {
+    return stringProperties.keyboardHelp;
+  }
 }

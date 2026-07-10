@@ -1,114 +1,75 @@
 # Implementation Notes - Habitable Zones
 
-## Architecture Overview
+## Architecture overview
 
-TemplateSingleSim is a minimal starter scaffold for forking new single-screen SceneryStack simulations. It demonstrates the Model-View pattern, color profiles, localization, reset behavior, and reusable common components without domain-specific physics.
-
-### High-Level Architecture
+Two independent screens. Circumstellar owns a rich evolution + HZ model; Galactic is a thin parametric
+radius → metallicity / risk / habitability layer. Shared chrome lives in `src/common/`.
 
 ```
 main.ts
-  └─ HabitableZonesScreen             (Screen<HabitableZonesModel, HabitableZonesScreenView>)
-       ├─ HabitableZonesModel          state + logic  (src/habitable-zones-screen/model/)
-       └─ HabitableZonesScreenView     visuals        (src/habitable-zones-screen/view/)
-            ├─ HabitableZonesScreenSummaryContent     (PDOM overview)
-            └─ HabitableZonesKeyboardHelpContent      (keyboard help dialog)
+  ├─ CircumstellarScreen     (Screen<CircumstellarModel, CircumstellarScreenView>)
+  │    ├─ circumstellar/model/   CircumstellarModel, StarEvolution, planetEvolution,
+  │    │                         shzStars, realSystems, …
+  │    └─ circumstellar/view/    SHZ diagram, timeline, HR / habitability plots, panels
+  └─ GalacticScreen          (Screen<GalacticModel, GalacticScreenView>)
+       ├─ galactic/model/        GalacticModel, galacticHabitability
+       └─ galactic/view/         Milky Way disc, radius plot, control panel
 
 src/common/
-  ├─ SimPanel.ts           pre-themed panel (all screens share HabitableZonesColors)
-  └─ TimeModel.ts          composable play/pause + elapsed time
+  ├─ TimeModel.ts              play/pause (used by Circumstellar timeline)
+  └─ HabitableZonesPanel.ts    pre-themed Panel (HabitableZonesColors)
 
 src/preferences/
-  ├─ HabitableZonesPreferencesModel   sim-specific pref state
-  ├─ HabitableZonesPreferencesNode    pref UI shown in Preferences → Simulation
-  └─ habitableZonesQueryParameters    query-parameter declarations
+  ├─ HabitableZonesPreferencesModel   empty scaffold
+  ├─ HabitableZonesPreferencesNode
+  └─ habitableZonesQueryParameters
 ```
 
-Data flows Model → View through AXON `Property` objects. The view observes
-properties via `.link()` or `.lazyLink()` and updates reactively.
+Model → View via AXON Properties. Educator-facing math: [model.md](./model.md).
 
-## Model Components
+## Model components
 
-### HabitableZonesModel
+### CircumstellarModel (`circumstellar/model/`)
 
-An empty coordinator with documented hooks for `step(dt)` and `reset()`.
-Add physics state as `BooleanProperty`, `NumberProperty`, etc. from
-`scenerystack/axon`.
+Rich coordinator: selected star index into `SHZ_STARS`, age, zero-age planet distance, HZ mode
+(optimistic / conservative), real-system preset, diagram zoom, reference-orbit / grid toggles, and
+timeline `animationRateProperty`. Composes `TimeModel`; `step(dt)` advances stellar age when playing.
 
-### TimeModel (common)
+Derived state includes current mass / L / T / R (via `StarEvolution.sampleStar`), mass-scaled
+`effectivePlanetDistance`, HZ edges `√L · coeff`, planet status, tidal-lock and destruction times
+(`planetEvolution`), and real-system pericenter lists (`realSystems`).
 
-`src/common/TimeModel.ts` is a reusable play/pause + elapsed-time model for
-animated sims. Compose it into your screen model rather than subclassing:
+### shzStars
 
-```typescript
-export class YourModel implements TModel {
-  public readonly timer = new TimeModel();
+Large vendored catalog: **17** evolutionary tracks (0.3–30 M☉), time-indexed `dataTable` + epoch list.
+Do not hand-edit; regenerate from the NAAP source if the data change.
 
-  public step(dt: number): void {
-    this.timer.step(dt);
-    // physics driven by this.timer.timeProperty.value
-  }
-  public reset(): void { this.timer.reset(); }
-}
-```
+### GalacticModel (`galactic/model/`)
 
-## View Components
+Thin: one `selectedRadiusProperty` (kpc) and derived metallicity, risk, habitability, GHZ bounds, and
+inside-GHZ flag. `galacticHabitability.ts` holds the parametric curves and `findGhzBounds()` scan.
+`step` is a no-op (no time dimension).
 
-### HabitableZonesScreenView as Coordinator
+## View components
 
-The screen view demonstrates layout using `layoutBounds`, background fill from
-`HabitableZonesColors.ts`, and a `ResetAllButton` wired to `model.reset()`. Add
-specialized sub-nodes under `src/habitable-zones-screen/view/`.
+Circumstellar view is diagram-heavy (top-down SHZ, timeline scrubber, optional HR / habitability
+plots, general settings). Galactic view shows a disc + radius plot and readouts. Both use
+`HabitableZonesPanel` and projector-aware colors.
 
-### SimPanel (common)
+## Preferences
 
-`src/common/SimPanel.ts` wraps SceneryStack's `Panel` with the sim's color
-scheme baked in. All control panels should use `SimPanel` so projector-mode
-switching is automatic:
+Empty scaffold (same pattern as Extrasolar Planets) — tandem reserved; no sim-specific prefs yet.
 
-```typescript
-const panel = new SimPanel(content);            // defaults
-const panel = new SimPanel(content, { xMargin: 20 }); // any PanelOption override
-```
+## Disposal
 
-### Color Scheme
+Screen-lifetime architecture: models/views persist for the sim session. No mid-run dispose of the
+main Property graphs; dynamic UI should follow SceneryStack norms if short-lived nodes are added later.
 
-`HabitableZonesColors.ts` defines `ProfileColorProperty` instances for "default" (dark)
-and "projector" (light) profiles. SceneryStack switches profiles automatically
-when the user toggles Projector Mode in Preferences.
+## Tests
 
-## Forking this template
+`tests/`: `StarEvolution`, `planetEvolution`, `galacticHabitability`, `TimeModel`.
 
-### Automated rename
+## Multi-screen
 
-```sh
-npm run rename -- --id friction --name "Friction"
-npm run check
-```
-
-`scripts/rename-sim.ts` replaces all template identifiers in file content and
-renames files and folders in one pass.
-
-### Manual fork checklist
-
-- Update `package.json` name, `init.ts` name/version, `brand.ts`
-- Replace placeholder view content with play area and control panels
-- Replace `HabitableZonesColors.ts` colors with sim-specific palette
-- Update locale JSON files: title, screen names, a11y strings
-- Regenerate PWA icons (`npm run icons`) after editing `public/icons/icon.svg`
-- Add `doc/implementation-notes.md` describing the new sim's architecture
-
-## Multi-screen simulations
-
-See `doc/multi-screen.md` for a complete guide covering:
-- Independent vs. shared-model architectures
-- File structure for each screen
-- StringManager and locale changes
-- Home-screen icon requirements
-- Per-screen accessibility strings
-
-## Known gaps / TODOs
-
-- No dispose() calls yet — add them once Properties gain external listeners.
-- `HabitableZonesModel.step()` and `reset()` bodies are stubs — fill in with real physics.
-- `HabitableZonesScreenView` pdomOrder TODO comment — add interactive nodes as they are created.
+Independent-state pattern — see [multi-screen.md](./multi-screen.md). Circumstellar and Galactic labs
+do not share model state.

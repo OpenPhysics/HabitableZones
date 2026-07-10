@@ -7,6 +7,7 @@
  * describes the star, its habitable zone, and the planet's current status.
  */
 import { DerivedProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { StringUtils } from "scenerystack/phetcommon";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -56,7 +57,7 @@ export class CircumstellarScreenSummaryContent extends ScreenSummaryContent {
         const star = SHZ_STARS[starIndex];
         const mass = star === undefined ? 0 : star.mass;
         const ageLabel =
-          age >= 1e9 ? `${(age / 1e9).toFixed(1)} billion years` : `${(age / 1e6).toFixed(1)} million years`;
+          age >= 1e9 ? `${toFixed(age / 1e9, 1)} billion years` : `${toFixed(age / 1e6, 1)} million years`;
         let statusLabel = status === "tooHot" ? tooHot : status === "tooCold" ? tooCold : temperate;
         if (destroyed) {
           statusLabel = destroyedLabel;
@@ -64,12 +65,12 @@ export class CircumstellarScreenSummaryContent extends ScreenSummaryContent {
           statusLabel = lockedLabel;
         }
         return StringUtils.fillIn(pattern, {
-          mass: mass.toFixed(1),
+          mass: toFixed(mass, 1),
           age: ageLabel,
-          temperature: temperature.toFixed(0),
-          hzInner: hzInner.toFixed(2),
-          hzOuter: hzOuter.toFixed(2),
-          distance: distance.toFixed(2),
+          temperature: toFixed(temperature, 0),
+          hzInner: toFixed(hzInner, 2),
+          hzOuter: toFixed(hzOuter, 2),
+          distance: toFixed(distance, 2),
           status: statusLabel,
         });
       },

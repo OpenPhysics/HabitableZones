@@ -1,14 +1,15 @@
 # Habitable Zones
 
-A reusable single-screen simulation template built with [SceneryStack](https://scenerystack.org/),
-Vite 8, TypeScript 6, and Biome 2.
+SceneryStack port of the NAAP *Habitable Zones* lab — circumstellar and galactic habitability
+screens. Built with [SceneryStack](https://scenerystack.org/), Vite 8, TypeScript, and Biome 2.
 
 ## Features
 
-- Single-screen SceneryStack scaffold with model/view separation
-- English and French localization via `StringManager`
+- Two screens: **Circumstellar** (stellar evolution + HZ) and **Galactic** (Milky Way habitability)
+- English, Spanish, and French localization via `StringManager`
 - Default and projector color profiles
 - Progressive Web App (installable, offline-capable)
+- Unit tests for star evolution and galactic habitability helpers
 - Git hooks for Biome pre-commit checks
 - Shared GitHub Actions CI via `OpenPhysics/Baton`
 
@@ -31,10 +32,12 @@ npm start        # dev server → http://localhost:5173
 | `npm run lint` | Biome lint check |
 | `npm run format` | Auto-format all files |
 | `npm run fix` | Lint + auto-fix |
+| `npm test` | Run Vitest unit tests |
 | `npm run icons` | Regenerate PNG icons from `public/icons/icon.svg` |
+| `npm run decompile` | Extract ActionScript from NAAP Flash `.swf` sources |
 | `npm run clean` | Remove `dist/` |
 
-New sims start at `version: "0.0.0"` in `package.json`. Bump only when cutting a release (for example `npm version patch` and a matching git tag). Keep `name` in kebab-case; it is separate from the SceneryStack sim identifier in `src/init.ts`.
+Quality gate before release: `npm run check && npm run lint && npm run test && npm run build`.
 
 ## Tech Stack
 
