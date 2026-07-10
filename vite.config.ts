@@ -154,8 +154,9 @@ export default defineConfig(({ mode }) => {
             manifest: {
               name: "Habitable Zones",
               // biome-ignore lint/style/useNamingConvention: Web App Manifest spec requires snake_case keys
-              short_name: "SimTemplate",
-              description: "A single-screen SceneryStack simulation template",
+              short_name: "Habitable Zones",
+              description:
+                "A two-screen SceneryStack simulation porting the NAAP Habitable Zones lab (Circumstellar + Galactic).",
               // biome-ignore lint/style/useNamingConvention: Web App Manifest spec requires snake_case keys
               theme_color: "#1a1a2e",
               // biome-ignore lint/style/useNamingConvention: Web App Manifest spec requires snake_case keys
