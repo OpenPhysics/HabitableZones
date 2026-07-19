@@ -9,6 +9,7 @@ import { Rectangle, VBox } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { ScreenView } from "scenerystack/sim";
+import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../../common/HabitableZonesButtonOptions.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import { SCREEN_VIEW_MARGIN } from "../../HabitableZonesConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -68,6 +69,7 @@ export class GalacticScreenView extends ScreenView {
     this.addChild(controlPanel);
 
     const resetAllButton = new ResetAllButton({
+      ...FLAT_RESET_ALL_BUTTON_OPTIONS,
       listener: () => {
         model.reset();
         this.reset();

@@ -13,6 +13,7 @@ import { Node } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { ScreenView } from "scenerystack/sim";
+import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../../common/HabitableZonesButtonOptions.js";
 import { HabitableZonesPanel } from "../../common/HabitableZonesPanel.js";
 import { SCREEN_VIEW_MARGIN, SHZ_DIAGRAM_VIEW_HEIGHT } from "../../HabitableZonesConstants.js";
 import type { CircumstellarModel } from "../model/CircumstellarModel.js";
@@ -73,6 +74,7 @@ export class CircumstellarScreenView extends ScreenView {
     this.addChild(comboBoxListParent);
 
     const resetAllButton = new ResetAllButton({
+      ...FLAT_RESET_ALL_BUTTON_OPTIONS,
       listener: () => {
         model.reset();
         this.reset();
