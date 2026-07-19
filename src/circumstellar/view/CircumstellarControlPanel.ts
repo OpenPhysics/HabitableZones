@@ -12,6 +12,12 @@ import { HBox, type Node, Text, VBox } from "scenerystack/scenery";
 import { NumberControl, PhetFont } from "scenerystack/scenery-phet";
 import type { ComboBoxItem, RectangularRadioButtonGroupItem } from "scenerystack/sun";
 import { ComboBox, RectangularPushButton, RectangularRadioButtonGroup } from "scenerystack/sun";
+import {
+  FLAT_RECTANGULAR_BUTTON_OPTIONS,
+  LIGHT_SURFACE_TEXT_FILL,
+  SIM_COMBO_BOX_OPTIONS,
+  SIM_RADIO_BUTTON_GROUP_OPTIONS,
+} from "../../common/HabitableZonesButtonOptions.js";
 import { HabitableZonesPanel } from "../../common/HabitableZonesPanel.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import { PLANET_DISTANCE_RANGE_AU } from "../../HabitableZonesConstants.js";
@@ -41,19 +47,23 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
     const labelText = (property: TReadOnlyProperty<string>): Text =>
       new Text(property, { font: LABEL_FONT, fill: HabitableZonesColors.textColorProperty });
 
+    const comboItemText = (property: TReadOnlyProperty<string> | string): Text =>
+      new Text(property, { font: LABEL_FONT, fill: LIGHT_SURFACE_TEXT_FILL });
+
     const realSystemItems: ComboBoxItem<RealSystemId>[] = [
       {
         value: NONE_REAL_SYSTEM_ID,
-        createNode: () => new Text(strings.realSystemNoneStringProperty),
+        createNode: () => comboItemText(strings.realSystemNoneStringProperty),
         accessibleName: strings.realSystemNoneStringProperty,
       },
       ...REAL_SYSTEMS.map((system) => ({
         value: system.id as RealSystemId,
-        createNode: () => new Text(system.name),
+        createNode: () => comboItemText(system.name),
         accessibleName: system.name,
       })),
     ];
     const realSystemComboBox = new ComboBox(model.selectedRealSystemIdProperty, realSystemItems, listParent, {
+      ...SIM_COMBO_BOX_OPTIONS,
       accessibleName: a11y.controls.realSystemSelectorStringProperty,
     });
 
@@ -64,11 +74,12 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
       );
       return {
         value: index,
-        createNode: () => new Text(labelProperty),
+        createNode: () => comboItemText(labelProperty),
         accessibleName: labelProperty,
       };
     });
     const starComboBox = new ComboBox(model.selectedStarIndexProperty, starItems, listParent, {
+      ...SIM_COMBO_BOX_OPTIONS,
       accessibleName: a11y.controls.starSelectorStringProperty,
     });
     model.isStarMassLockedProperty.link((locked) => {
@@ -86,25 +97,29 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
           decimalPlaces: 3,
           valuePattern: new DerivedProperty([strings.unitsAuStringProperty], (unit) => `{{value}} ${unit}`),
         },
+        arrowButtonOptions: FLAT_RECTANGULAR_BUTTON_OPTIONS,
       },
     );
 
     const zoomOutButton = new RectangularPushButton({
-      content: new Text(strings.zoomOutStringProperty),
+      ...FLAT_RECTANGULAR_BUTTON_OPTIONS,
+      content: new Text(strings.zoomOutStringProperty, { font: LABEL_FONT, fill: LIGHT_SURFACE_TEXT_FILL }),
       listener: () => model.zoomDiagramOut(),
       accessibleName: a11y.controls.zoomOutStringProperty,
     });
     const zoomInButton = new RectangularPushButton({
-      content: new Text(strings.zoomInStringProperty),
+      ...FLAT_RECTANGULAR_BUTTON_OPTIONS,
+      content: new Text(strings.zoomInStringProperty, { font: LABEL_FONT, fill: LIGHT_SURFACE_TEXT_FILL }),
       listener: () => model.zoomDiagramIn(),
       accessibleName: a11y.controls.zoomInStringProperty,
     });
 
     const hzModeItems: RectangularRadioButtonGroupItem<HzMode>[] = [
-      { value: "optimistic", createNode: () => new Text(strings.hzOptimisticStringProperty) },
-      { value: "conservative", createNode: () => new Text(strings.hzConservativeStringProperty) },
+      { value: "optimistic", createNode: () => comboItemText(strings.hzOptimisticStringProperty) },
+      { value: "conservative", createNode: () => comboItemText(strings.hzConservativeStringProperty) },
     ];
     const hzModeRadioButtonGroup = new RectangularRadioButtonGroup(model.hzModeProperty, hzModeItems, {
+      ...SIM_RADIO_BUTTON_GROUP_OPTIONS,
       orientation: "horizontal",
       accessibleName: a11y.controls.hzModeSelectorStringProperty,
     });

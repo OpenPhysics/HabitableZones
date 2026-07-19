@@ -7,7 +7,12 @@
  */
 
 import type { PlayPauseStepButtonGroupOptions, TimeControlNodeOptions } from "scenerystack/scenery-phet";
-import { ButtonNode, type ComboBoxOptions } from "scenerystack/sun";
+import {
+  ButtonNode,
+  type ComboBoxOptions,
+  type RectangularPushButtonOptions,
+  type RectangularRadioButtonGroupOptions,
+} from "scenerystack/sun";
 import HabitableZonesColors from "../HabitableZonesColors.js";
 
 export const FLAT_BUTTON_APPEARANCE_OPTIONS = {
@@ -28,8 +33,24 @@ export const SIM_COMBO_BOX_OPTIONS = {
   listStroke: HabitableZonesColors.panelBorderColorProperty,
 } satisfies Pick<ComboBoxOptions, "buttonFill" | "listFill" | "buttonStroke" | "listStroke">;
 
-/** Options for RectangularPushButton and NumberControl arrow buttons. */
-export const FLAT_RECTANGULAR_BUTTON_OPTIONS = FLAT_BUTTON_APPEARANCE_OPTIONS;
+/**
+ * Options for RectangularPushButton and NumberControl arrow buttons: flat look plus themed
+ * baseColor (avoids sun's default ColorConstants.LIGHT_BLUE).
+ */
+export const FLAT_RECTANGULAR_BUTTON_OPTIONS = {
+  ...FLAT_BUTTON_APPEARANCE_OPTIONS,
+  baseColor: HabitableZonesColors.controlSurfaceColorProperty,
+} satisfies Pick<RectangularPushButtonOptions, "buttonAppearanceStrategy" | "baseColor">;
+
+/**
+ * RectangularRadioButtonGroup chrome. Content labels must use {@link LIGHT_SURFACE_TEXT_FILL}.
+ * Overrides sun's default `baseColor: ColorConstants.LIGHT_BLUE`.
+ */
+export const SIM_RADIO_BUTTON_GROUP_OPTIONS = {
+  radioButtonOptions: {
+    baseColor: HabitableZonesColors.controlSurfaceColorProperty,
+  },
+} satisfies Pick<RectangularRadioButtonGroupOptions, "radioButtonOptions">;
 
 /** Options for ResetAllButton (extends RoundPushButton). */
 export const FLAT_RESET_ALL_BUTTON_OPTIONS = FLAT_BUTTON_APPEARANCE_OPTIONS;

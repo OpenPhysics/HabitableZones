@@ -14,13 +14,16 @@ import HabitableZonesNamespace from "../HabitableZonesNamespace.js";
 import { StringManager } from "../i18n/StringManager.js";
 import type { HabitableZonesPreferencesModel } from "./HabitableZonesPreferencesModel.js";
 
+/** Preferences dialog content sits on a light background regardless of color profile. */
+const PREFERENCES_TEXT_FILL = HabitableZonesColors.controlSurfaceTextColorProperty;
+
 export class HabitableZonesPreferencesNode extends VBox {
   public constructor(_preferencesModel: HabitableZonesPreferencesModel, _tandem?: Tandem) {
     const prefStrings = StringManager.getInstance().getPreferences();
 
     const header = new Text(prefStrings.titleStringProperty, {
       font: new PhetFont({ size: 18, weight: "bold" }),
-      fill: HabitableZonesColors.textColorProperty,
+      fill: PREFERENCES_TEXT_FILL,
     });
 
     super({
