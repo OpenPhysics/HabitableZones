@@ -12,6 +12,7 @@ import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
+import { createGalacticIcon } from "../common/HabitableZonesScreenIcons.js";
 import HabitableZonesColors from "../HabitableZonesColors.js";
 import { GalacticModel } from "./model/GalacticModel.js";
 import { GalacticKeyboardHelpContent } from "./view/GalacticKeyboardHelpContent.js";
@@ -34,6 +35,8 @@ export class GalacticScreen extends Screen<GalacticModel, GalacticScreenView> {
         {
           backgroundColorProperty: HabitableZonesColors.backgroundColorProperty,
           createKeyboardHelpNode: () => new GalacticKeyboardHelpContent(),
+          homeScreenIcon: createGalacticIcon(),
+          navigationBarIcon: createGalacticIcon(),
         },
         options,
       ),

@@ -12,6 +12,7 @@ import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
+import { createCircumstellarIcon } from "../common/HabitableZonesScreenIcons.js";
 import HabitableZonesColors from "../HabitableZonesColors.js";
 import { CircumstellarModel } from "./model/CircumstellarModel.js";
 import { CircumstellarKeyboardHelpContent } from "./view/CircumstellarKeyboardHelpContent.js";
@@ -34,6 +35,8 @@ export class CircumstellarScreen extends Screen<CircumstellarModel, Circumstella
         {
           backgroundColorProperty: HabitableZonesColors.backgroundColorProperty,
           createKeyboardHelpNode: () => new CircumstellarKeyboardHelpContent(),
+          homeScreenIcon: createCircumstellarIcon(),
+          navigationBarIcon: createCircumstellarIcon(),
         },
         options,
       ),
