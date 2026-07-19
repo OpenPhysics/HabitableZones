@@ -4,78 +4,47 @@ Sim-specific context for AI assistants. General SceneryStack guidance: [OpenPhys
 
 ## Project
 
-A two-screen SceneryStack simulation porting the NAAP **Habitable Zones** lab,
-scaffolded from `TemplateSingleSim`. Both screens are implemented: Circumstellar
-has a full star-evolution / HZ model; Galactic uses parametric habitability curves
-at a selected galactic radius.
+SceneryStack port of the NAAP **Habitable Zones** lab. Two screens explore where liquid-water conditions can persist — around an evolving star, and across the Milky Way. Architecture and formulas: [doc/model.md](doc/model.md), [doc/implementation-notes.md](doc/implementation-notes.md).
 
-- **Circumstellar** (`src/circumstellar/`) — port of the NAAP *Circumstellar Habitable Zone Simulator* (`stellarHabitableZone.swf`): a star with its circumstellar habitable zone and an orbiting planet.
-- **Galactic** (`src/galactic/`) — port of the NAAP *Galactic / Milky Way Habitability Simulator* (`milkyWayHabitability.swf`): the band of the Milky Way that forms the galactic habitable zone.
+- **Circumstellar** (`src/circumstellar/`) — star evolution track, moving circumstellar HZ, orbiting planet, six real exoplanet presets.
+- **Galactic** (`src/galactic/`) — galactocentric radius vs metallicity, catastrophic-event risk, and combined habitability.
 
-Shared code keeps the `HabitableZones` prefix; per-screen code uses the
-`Circumstellar` / `Galactic` prefixes. Concept-named folders, no `-screen` suffix.
+Shared code uses the `HabitableZones` prefix; per-screen code uses `Circumstellar` / `Galactic`. Concept-named folders, no `-screen` suffix.
 
 ## Key files
 
-| File | Purpose |
+| Area | Location |
 |---|---|
-| `src/HabitableZonesColors.ts` | All `ProfileColorProperty` instances (default + projector) |
-| `src/HabitableZonesConstants.ts` | Named numeric constants (layout px, physics SI units) |
-| `src/HabitableZonesNamespace.ts` | Namespace used by `.register()` |
-| `src/common/HabitableZonesPanel.ts` | Pre-themed `Panel` wrapper (uses `HabitableZonesColors`) |
-| `src/common/TimeModel.ts` | Composable play/pause + elapsed-time model for animated sims |
-| `src/i18n/StringManager.ts` | Singleton localized string accessor; per-screen name + a11y getters |
-| `src/main.ts` | Entry point; registers both screens with the Sim |
-| `src/circumstellar/CircumstellarScreen.ts` | `Screen<CircumstellarModel, CircumstellarScreenView>` wrapper |
-| `src/circumstellar/model/CircumstellarModel.ts` | Circumstellar screen state (star catalog, HZ, timeline) |
-| `src/circumstellar/view/CircumstellarScreenView.ts` | Circumstellar visuals, `screenSummaryContent` + `pdomOrder` |
-| `src/galactic/GalacticScreen.ts` | `Screen<GalacticModel, GalacticScreenView>` wrapper |
-| `src/galactic/model/GalacticModel.ts` | Galactic screen state (radius → metallicity/risk/habitability) |
-| `src/galactic/view/GalacticScreenView.ts` | Galactic visuals, `screenSummaryContent` + `pdomOrder` |
-| `src/preferences/habitableZonesQueryParameters.ts` | `QueryStringMachine` parameters |
-| `scripts/decompile-flash.ts` | Extract ActionScript from the NAAP Flash `.swf` sources via JPEXS FFDec (→ `NAAP/decompiled/`) |
+| Screens | `src/circumstellar/CircumstellarScreen.ts`, `src/galactic/GalacticScreen.ts` |
+| Circumstellar model | `circumstellar/model/CircumstellarModel.ts`, `StarEvolution.ts`, `shzStars.ts`, `planetEvolution.ts`, `realSystems.ts` |
+| Galactic model | `galactic/model/GalacticModel.ts`, `galacticHabitability.ts` |
+| Shared UI | `src/common/HabitableZonesPanel.ts`, `HabitableZonesButtonOptions.ts`, `HabitableZonesHotkeyData.ts` |
+| Animation | `src/common/TimeModel.ts` (partial use on Circumstellar) |
+| Colors / constants | `src/HabitableZonesColors.ts`, `src/HabitableZonesConstants.ts` |
+| Strings | `src/i18n/StringManager.ts` |
+| Preferences | `src/preferences/` (empty scaffold + query params) |
+| Entry | `src/main.ts` |
 
-## Screens
+## Model
 
-Two screens registered in `src/main.ts`, in this order:
+Two **independent** screen models — no shared root state.
 
-1. **Circumstellar** (`src/circumstellar/`) — Circumstellar Habitable Zone Simulator
-2. **Galactic** (`src/galactic/`) — Galactic / Milky Way Habitability Simulator
+| Screen | Model | Notes |
+|---|---|---|
+| **Circumstellar** | `CircumstellarModel` | 17-star evolution catalog (0.3–30 M☉); HZ edges `d = √(L/L☉) × c`; optimistic vs conservative limits; planet at zero-age distance *d₀* with effective distance *d_eff = d₀·(M₀/M(t))*; destruction marker when engulfed; six real-system presets |
+| **Galactic** | `GalacticModel` | Parametric metallicity, risk, and habitability vs galactocentric radius; GHZ annulus from combined score |
 
-When implementing: put shared physics in `src/common/`, per-screen state in each
-`*Model.ts`. Per-screen a11y lives under `a11y.<screenKey>` in each locale JSON,
-exposed via `StringManager.getCircumstellarA11yStrings()` /
-`getGalacticA11yStrings()`. Make each `currentDetailsContent` a live
-`DerivedProperty` over model state and add `accessibleName`s to every interactive node.
+**Shared gotchas**
 
-## Decompiling the Flash sources
+- HZ scaling uses **`√(L/L☉)`** with optimistic coefficients (0.8 / 1.5 AU for a solar twin) or conservative (0.95 / 1.37).
+- **Tidal-locking time** is evaluated at the **zero-age distance *d₀*** — it does not update as the orbit stretches with stellar mass loss.
+- Galactic radial curves are a **parametric reconstruction** of NAAP pedagogy, not a byte-for-byte port of unpublished Flash formulae.
+- Full stellar lifetime ≈ **120 s wall-clock** at 1× animation on Circumstellar.
 
-`npm run decompile` (script: `scripts/decompile-flash.ts`) extracts readable
-ActionScript from the NAAP Flash movies so the port can be diffed against the
-originals. The `.fla` files are old binary projects no tool reads directly, so the
-script decompiles their sibling compiled `.swf` via **JPEXS FFDec** (needs Java).
+## Accessibility
 
-```sh
-npm run decompile                 # the two HZ simulators → NAAP/decompiled/<name>/scripts/*.as
-npm run decompile -- --all        # the two simulators + the rotation-curve concept demo
-npm run decompile -- --list       # dry run: print what would be decompiled
-npm run decompile -- --setup      # one-time: download FFDec into tools/ffdec/
-```
-
-By default the two primary simulators decompile (one per screen):
-`stellarHabitableZone004` (Circumstellar) and `milkyWayHabitability001-B`
-(Galactic). Output goes to `NAAP/decompiled/` (git-ignored, along with `tools/ffdec/`).
-The decompiled AS is a **read-only reference** — transcribe the maths into typed
-TS in `src/`; don't vendor it.
-
-## npm scripts
-
-`start`/`dev` (vite) · `build` · `build:single` · `check` (tsc) · `lint`/`fix` (biome) ·
-`test` (vitest) · `icons` · `decompile` · `rename`. Gate: `npm run check && npm run lint && npm run build && npm test`.
-
-## PWA
-
-After `npm run build`, the sim is installable offline via Workbox (`dist/manifest.webmanifest`).
+Follows the shared [OpenPhysics accessibility convention](https://github.com/OpenPhysics/Baton/blob/main/ACCESSIBILITY.md).
+Each screen registers `*ScreenSummaryContent` and explicit `pdomOrder` on its `*ScreenView`. A11y strings live under `a11y.circumstellar` and `a11y.galactic` in each locale JSON, via `StringManager.getCircumstellarA11yStrings()` / `getGalacticA11yStrings()`. Keep `currentDetailsContent` live over model state; every interactive node needs an `accessibleName`.
 
 ## Testing
 
@@ -83,11 +52,30 @@ Fleet-standard Vitest layout:
 
 | Path | Purpose |
 |---|---|
-| `vitest.config.ts` | Test environment + `setupFiles` when present; `execArgv: ["--expose-gc"]` with memory-leak suite |
-| `tests/setup.ts` | Canvas / AudioContext mocks + `init({ name: "…" })` before SceneryStack imports (when required) |
-| `tests/**/*.test.ts` | Model/physics unit tests — mirror `src/` under `tests/` |
+| `vitest.config.ts` | Test environment + `setupFiles`; `execArgv: ["--expose-gc"]` with memory-leak suite |
+| `tests/setup.ts` | Canvas / AudioContext mocks + `init({ name: "…" })` before SceneryStack imports |
+| `tests/**/*.test.ts` | Model/physics unit tests |
 | `tests/memory-leak.test.ts` | WeakRef + `forceGC` dispose regression (fleet pattern) |
+
+| File | Covers |
+|---|---|
+| `StarEvolution.test.ts` | Catalog sampling, luminosity/temperature/radius |
+| `planetEvolution.test.ts` | *d_eff*, Roche limit, destruction scan, tidal lock |
+| `galacticHabitability.test.ts` | Metallicity, risk, habitability, GHZ bounds |
+| `TimeModel.test.ts` | Play/pause elapsed time |
+| `memory-leak.test.ts` | Dispose regression |
 
 - Put unit tests only under root `tests/` (never co-locate or use `__tests__/`).
 - Run `npm test`. CI runs the suite when a `test` script is present.
-- Expand `memory-leak.test.ts` for components that add/remove nodes or link Properties at runtime (see OpticsLab).
+
+## Commands
+
+```bash
+npm run lint && npm run check && npm run build && npm test
+```
+
+## Development notes
+
+- **`npm run decompile`** extracts NAAP Flash ActionScript via JPEXS FFDec into gitignored `NAAP/decompiled/` — read-only reference.
+- Screens are independent; see [doc/multi-screen.md](doc/multi-screen.md) for the fleet multi-screen pattern.
+- After `npm run build`, the sim is installable offline via Workbox (`dist/manifest.webmanifest`).

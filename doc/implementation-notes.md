@@ -1,75 +1,107 @@
 # Implementation Notes - Habitable Zones
 
-## Architecture overview
+Developer-facing notes on the architecture. Educator-facing physics are in [model.md](./model.md).
 
-Two independent screens. Circumstellar owns a rich evolution + HZ model; Galactic is a thin parametric
-radius → metallicity / risk / habitability layer. Shared chrome lives in `src/common/`.
+## Architecture Overview
+
+Two independent screens, each `Screen<Model, ScreenView>`. No shared root model.
 
 ```
-main.ts
-  ├─ CircumstellarScreen     (Screen<CircumstellarModel, CircumstellarScreenView>)
-  │    ├─ circumstellar/model/   CircumstellarModel, StarEvolution, planetEvolution,
-  │    │                         shzStars, realSystems, …
-  │    └─ circumstellar/view/    SHZ diagram, timeline, HR / habitability plots, panels
-  └─ GalacticScreen          (Screen<GalacticModel, GalacticScreenView>)
-       ├─ galactic/model/        GalacticModel, galacticHabitability
-       └─ galactic/view/         Milky Way disc, radius plot, control panel
+src/main.ts
+  ├─ CircumstellarScreen   (Screen<CircumstellarModel, CircumstellarScreenView>)
+  └─ GalacticScreen        (Screen<GalacticModel, GalacticScreenView>)
+
+src/circumstellar/
+  CircumstellarScreen.ts
+  model/
+    CircumstellarModel.ts       coordinator + classifyPlanetDistance()
+    StarEvolution.ts            sampleStar, luminosity, temperatureK, radiusSolar
+    shzStars.ts                 SHZ_STARS catalog (17 masses; compressed tables)
+    planetEvolution.ts          d_eff, Roche, tidal lock, destruction scan
+    realSystems.ts              6 presets + NONE
+    findStarIndexByMass.ts      nearest catalog mass for real-system lock
+    formatAge.ts                My/Gy/y display helper
+  view/
+    CircumstellarScreenView.ts, SHZDiagramNode.ts, SHZTimelineNode.ts
+    CircumstellarControlPanel.ts, HRDiagramNode.ts, …
+
+src/galactic/
+  GalacticScreen.ts
+  model/
+    GalacticModel.ts
+    galacticHabitability.ts       parametric Z, risk, H; findGhzBounds()
+  view/
+    GalacticScreenView.ts, GalacticDiscNode.ts, GalacticPlotNode.ts, …
 
 src/common/
-  ├─ TimeModel.ts              play/pause (used by Circumstellar timeline)
-  └─ HabitableZonesPanel.ts    pre-themed Panel (HabitableZonesColors)
+  TimeModel.ts                    play/pause only — partial use on Circumstellar
+  HabitableZonesPanel.ts, HabitableZonesButtonOptions.ts, HabitableZonesHotkeyData.ts
 
-src/preferences/
-  ├─ HabitableZonesPreferencesModel   empty scaffold
-  ├─ HabitableZonesPreferencesNode
-  └─ habitableZonesQueryParameters
+src/HabitableZonesConstants.ts    HZ coeffs, ranges, diagram/timeline layout, playback duration
+src/preferences/                  empty scaffold + query params (no params yet)
 ```
 
-Model → View via AXON Properties. Educator-facing math: [model.md](./model.md).
+Data flows Model → View through AXON `Property` / `DerivedProperty` / `Multilink`.
 
-## Model components
+## CircumstellarModel
 
-### CircumstellarModel (`circumstellar/model/`)
+| Property | Role |
+|---|---|
+| `selectedStarIndexProperty`, `ageProperty` | Catalog star + timeline position |
+| `planetDistanceProperty` (d₀), `displayPlanetDistanceProperty` (d_eff UI) | Dual distance with sync guards |
+| `hzModeProperty` | Optimistic vs conservative |
+| `realSystemProperty`, `isStarMassLockedProperty` | Preset systems |
+| `zoomIndexProperty`, `referenceOrbitsVisibleProperty`, `gridVisibleProperty` | Diagram |
+| `animationRateProperty`, `timer.isPlayingProperty` | Playback |
+| Derived | `luminosityProperty`, `hzInnerProperty`, `hzOuterProperty`, `planetStatusProperty`, `timePlanetDestroyedProperty`, `timePlanetTidallyLockedProperty`, `isPlanetTidallyLockedProperty`, … |
 
-Rich coordinator: selected star index into `SHZ_STARS`, age, zero-age planet distance, HZ mode
-(optimistic / conservative), real-system preset, diagram zoom, reference-orbit / grid toggles, and
-timeline `animationRateProperty`. Composes `TimeModel`; `step(dt)` advances stellar age when playing.
+**Stepping:** `step(dt)` advances `ageProperty` directly from `FULL_STAR_EVOLUTION_PLAYBACK_SECONDS`, star `timespan`, and `animationRateProperty` when playing. **`timer.step(dt)` is never called**; `TimeModel.timeProperty` is unused. Playback stops at end of track and pauses.
 
-Derived state includes current mass / L / T / R (via `StarEvolution.sampleStar`), mass-scaled
-`effectivePlanetDistance`, HZ edges `√L · coeff`, planet status, tidal-lock and destruction times
-(`planetEvolution`), and real-system pericenter lists (`realSystems`).
+**API highlights:** `setEffectivePlanetDistanceAU()`, `getEffectivePlanetDistanceRange()` (Flash drag limits ∝ M₀/M); `stepTimeline()` — 1/200 of timespan per step button; `zoomDiagramIn()` / `zoomDiagramOut()`.
 
-### shzStars
+## GalacticModel
 
-Large vendored catalog: **17** evolutionary tracks (0.3–30 M☉), time-indexed `dataTable` + epoch list.
-Do not hand-edit; regenerate from the NAAP source if the data change.
+`selectedRadiusProperty` drives derived `metallicityProperty`, `riskProperty`, `habitabilityProperty`,
+`isInsideGhzProperty`. GHZ bounds (`ghzInnerProperty`, `ghzOuterProperty`) computed **once at module
+load** via `findGhzBounds()` (0.05 kpc scan); throws if no band found.
 
-### GalacticModel (`galactic/model/`)
+`step()` is a no-op.
 
-Thin: one `selectedRadiusProperty` (kpc) and derived metallicity, risk, habitability, GHZ bounds, and
-inside-GHZ flag. `galacticHabitability.ts` holds the parametric curves and `findGhzBounds()` scan.
-`step` is a no-op (no time dimension).
+## View ↔ model contracts (physics-relevant)
 
-## View components
+- **`SHZTimelineNode`**: temperature curve uses `planetDistanceProperty` (d₀); habitability strip uses
+  `effectivePlanetDistanceAU` — document mismatch for maintainers.
+- **`SHZTimelineNode`**: draws **destruction marker only** on timeline (tidal-lock time computed but not
+  drawn).
+- **`SHZDiagramNode`**: status colors, real-system orbit overlays, blackbody star color.
 
-Circumstellar view is diagram-heavy (top-down SHZ, timeline scrubber, optional HR / habitability
-plots, general settings). Galactic view shows a disc + radius plot and readouts. Both use
-`HabitableZonesPanel` and projector-aware colors.
+## Key design decisions
 
-## Preferences
+- **Dual distance Properties** with guards — UI shows stretched orbit while preserving zero-age *d₀* for
+  some formulas.
+- **Compressed `shzStars` catalog** — regenerate via header instructions; do not hand-edit tables.
+- **Parametric galactic curves** — thresholds `METALLICITY_THRESHOLD = 0.35`, `RISK_THRESHOLD = 0.45`.
+- **Partial `TimeModel` integration** — only `isPlayingProperty`; age math lives in `CircumstellarModel.step`.
 
-Empty scaffold (same pattern as Extrasolar Planets) — tandem reserved; no sim-specific prefs yet.
+## Common components
+
+- `HabitableZonesPanel`, `HabitableZonesButtonOptions`, `HabitableZonesHotkeyData`.
 
 ## Disposal
 
-Screen-lifetime architecture: models/views persist for the sim session. No mid-run dispose of the
-main Property graphs; dynamic UI should follow SceneryStack norms if short-lived nodes are added later.
+Screen-lifetime models/views. No mid-session teardown.
 
-## Tests
+## Testing
 
-`tests/`: `StarEvolution`, `planetEvolution`, `galacticHabitability`, `TimeModel`.
+| File | Covers |
+|---|---|
+| `StarEvolution.test.ts`, `planetEvolution.test.ts`, `galacticHabitability.test.ts` | Core physics |
+| `TimeModel.test.ts` | Clock |
+| `memory-leak.test.ts` | Dispose regression |
+
+No tests for `CircumstellarModel`, `GalacticModel`, or view integration.
 
 ## Multi-screen
 
-Independent-state pattern — see [multi-screen.md](./multi-screen.md). Circumstellar and Galactic labs
-do not share model state.
+Independent state — see [multi-screen.md](./multi-screen.md) (note: that file may still use template
+folder names; actual folders are `circumstellar/` and `galactic/`).
