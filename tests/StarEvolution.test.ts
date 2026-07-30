@@ -79,7 +79,12 @@ describe("StarEvolution", () => {
     const luminosities = ages.map((age) => luminosity(sampleStar(sunStar, age)));
 
     for (let i = 1; i < luminosities.length; i++) {
-      expect(luminosities[i]).toBeGreaterThan(luminosities[i - 1]);
+      const current = luminosities[i];
+      const previous = luminosities[i - 1];
+      if (current === undefined || previous === undefined) {
+        throw new Error("test fixture: expected luminosity samples at each age");
+      }
+      expect(current).toBeGreaterThan(previous);
     }
   });
 
