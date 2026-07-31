@@ -96,6 +96,8 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
         numberDisplayOptions: {
           decimalPlaces: 3,
           valuePattern: new DerivedProperty([strings.unitsAuStringProperty], (unit) => `{{value}} ${unit}`),
+          textOptions: { fill: HabitableZonesColors.controlSurfaceTextColorProperty },
+          backgroundFill: HabitableZonesColors.controlSurfaceColorProperty,
         },
         arrowButtonOptions: FLAT_RECTANGULAR_BUTTON_OPTIONS,
       },

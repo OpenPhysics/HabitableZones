@@ -10,6 +10,7 @@ import { StringUtils } from "scenerystack/phetcommon";
 import { Text, VBox } from "scenerystack/scenery";
 import { NumberControl } from "scenerystack/scenery-phet";
 import { HabitableZonesPanel } from "../../common/HabitableZonesPanel.js";
+import HabitableZonesColors from "../../HabitableZonesColors.js";
 import { GALACTIC_RADIUS_RANGE_KPC } from "../../HabitableZonesConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { GalacticModel } from "../model/GalacticModel.js";
@@ -27,9 +28,12 @@ export class GalacticControlPanel extends HabitableZonesPanel {
       GALACTIC_RADIUS_RANGE_KPC,
       {
         accessibleName: a11y.controls.radiusControlStringProperty,
+        titleNodeOptions: { fill: HabitableZonesColors.textColorProperty },
         numberDisplayOptions: {
           decimalPlaces: 1,
           valuePattern: new DerivedProperty([strings.unitsKiloparsecsStringProperty], (unit) => `{{value}} ${unit}`),
+          textOptions: { fill: HabitableZonesColors.controlSurfaceTextColorProperty },
+          backgroundFill: HabitableZonesColors.controlSurfaceColorProperty,
         },
       },
     );
@@ -39,12 +43,14 @@ export class GalacticControlPanel extends HabitableZonesPanel {
         [strings.readoutMetallicityPatternStringProperty, model.metallicityAtSelectedProperty],
         (pattern, value) => StringUtils.fillIn(pattern, { value: toFixed(value, 2) }),
       ),
+      { fill: HabitableZonesColors.textColorProperty },
     );
 
     const riskReadout = new Text(
       new DerivedProperty([strings.readoutRiskPatternStringProperty, model.riskAtSelectedProperty], (pattern, value) =>
         StringUtils.fillIn(pattern, { value: toFixed(value, 2) }),
       ),
+      { fill: HabitableZonesColors.textColorProperty },
     );
 
     const habitabilityReadout = new Text(
@@ -52,6 +58,7 @@ export class GalacticControlPanel extends HabitableZonesPanel {
         [strings.readoutHabitabilityPatternStringProperty, model.habitabilityAtSelectedProperty],
         (pattern, value) => StringUtils.fillIn(pattern, { value: toFixed(value, 2) }),
       ),
+      { fill: HabitableZonesColors.textColorProperty },
     );
 
     const ghzStatusReadout = new Text(
@@ -59,7 +66,7 @@ export class GalacticControlPanel extends HabitableZonesPanel {
         [strings.readoutInsideGhzStringProperty, strings.readoutOutsideGhzStringProperty, model.isInsideGhzProperty],
         (inside, outside, isInside) => (isInside ? inside : outside),
       ),
-      { font: "bold 14px sans-serif" },
+      { font: "bold 14px sans-serif", fill: HabitableZonesColors.textColorProperty },
     );
 
     const content = new VBox({

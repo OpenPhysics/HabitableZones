@@ -30,7 +30,11 @@ export class GeneralSettingsPanel extends HabitableZonesPanel {
         font: CHECKBOX_FONT,
         fill: HabitableZonesColors.textColorProperty,
       }),
-      { accessibleName: strings.showScaleGridStringProperty },
+      {
+        accessibleName: strings.showScaleGridStringProperty,
+        checkboxColor: HabitableZonesColors.textColorProperty,
+        checkboxColorBackground: HabitableZonesColors.panelBackgroundColorProperty,
+      },
     );
 
     const showOrbitsCheckbox = new Checkbox(
@@ -39,7 +43,11 @@ export class GeneralSettingsPanel extends HabitableZonesPanel {
         font: CHECKBOX_FONT,
         fill: HabitableZonesColors.textColorProperty,
       }),
-      { accessibleName: a11y.controls.showOrbitsCheckboxStringProperty },
+      {
+        accessibleName: a11y.controls.showOrbitsCheckboxStringProperty,
+        checkboxColor: HabitableZonesColors.textColorProperty,
+        checkboxColorBackground: HabitableZonesColors.panelBackgroundColorProperty,
+      },
     );
 
     const content = new VBox({
