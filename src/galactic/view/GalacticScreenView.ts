@@ -5,10 +5,10 @@
  * risk plots, and a control panel — all sharing one selected-radius Property.
  */
 
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { Rectangle, VBox } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
-import type { ScreenViewOptions } from "scenerystack/sim";
-import { ScreenView } from "scenerystack/sim";
+import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../../common/HabitableZonesButtonOptions.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import { SCREEN_VIEW_MARGIN } from "../../HabitableZonesConstants.js";
@@ -20,12 +20,17 @@ import { GalacticRadiusPlotNode } from "./GalacticRadiusPlotNode.js";
 import { GalacticScreenSummaryContent } from "./GalacticScreenSummaryContent.js";
 import { MilkyWayDiscNode } from "./MilkyWayDiscNode.js";
 
+export type GalacticScreenViewOptions = ScreenViewOptions;
+
 export class GalacticScreenView extends ScreenView {
-  public constructor(model: GalacticModel, options?: ScreenViewOptions) {
-    super({
-      screenSummaryContent: new GalacticScreenSummaryContent(model),
-      ...options,
-    });
+  public constructor(model: GalacticModel, providedOptions?: GalacticScreenViewOptions) {
+    const options = optionize<GalacticScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {
+        screenSummaryContent: new GalacticScreenSummaryContent(model),
+      },
+      providedOptions,
+    );
+    super(options);
 
     const strings = StringManager.getInstance().getGalacticStrings();
     const a11y = StringManager.getInstance().getGalacticA11yStrings();

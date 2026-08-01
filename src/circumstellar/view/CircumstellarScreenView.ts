@@ -9,10 +9,10 @@
  *   3. a full-width "Timeline and Simulation Controls" region (bottom).
  */
 
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { Node } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
-import type { ScreenViewOptions } from "scenerystack/sim";
-import { ScreenView } from "scenerystack/sim";
+import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../../common/HabitableZonesButtonOptions.js";
 import { HabitableZonesPanel } from "../../common/HabitableZonesPanel.js";
 import { SCREEN_VIEW_MARGIN, SHZ_DIAGRAM_VIEW_HEIGHT } from "../../HabitableZonesConstants.js";
@@ -27,12 +27,17 @@ import { SHZTimelineNode } from "./SHZTimelineNode.js";
 const MARGIN = 12;
 const ROW_GAP = 8;
 
+export type CircumstellarScreenViewOptions = ScreenViewOptions;
+
 export class CircumstellarScreenView extends ScreenView {
-  public constructor(model: CircumstellarModel, options?: ScreenViewOptions) {
-    super({
-      screenSummaryContent: new CircumstellarScreenSummaryContent(model),
-      ...options,
-    });
+  public constructor(model: CircumstellarModel, providedOptions?: CircumstellarScreenViewOptions) {
+    const options = optionize<CircumstellarScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {
+        screenSummaryContent: new CircumstellarScreenSummaryContent(model),
+      },
+      providedOptions,
+    );
+    super(options);
 
     const contentWidth = this.layoutBounds.width - 2 * MARGIN;
 

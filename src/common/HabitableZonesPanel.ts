@@ -25,21 +25,26 @@
  *   const panel = new HabitableZonesPanel(content, { fill: "transparent" });
  */
 
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { Node } from "scenerystack/scenery";
-import type { PanelOptions } from "scenerystack/sun";
-import { Panel } from "scenerystack/sun";
+import { Panel, type PanelOptions } from "scenerystack/sun";
 import HabitableZonesColors from "../HabitableZonesColors.js";
 import { PANEL_CORNER_RADIUS } from "../HabitableZonesConstants.js";
 
+export type HabitableZonesPanelOptions = PanelOptions;
+
 export class HabitableZonesPanel extends Panel {
-  public constructor(content: Node, providedOptions?: PanelOptions) {
-    super(content, {
-      fill: HabitableZonesColors.panelBackgroundColorProperty,
-      stroke: HabitableZonesColors.panelBorderColorProperty,
-      cornerRadius: PANEL_CORNER_RADIUS,
-      xMargin: 12,
-      yMargin: 10,
-      ...providedOptions,
-    });
+  public constructor(content: Node, providedOptions?: HabitableZonesPanelOptions) {
+    const options = optionize<HabitableZonesPanelOptions, EmptySelfOptions, PanelOptions>()(
+      {
+        fill: HabitableZonesColors.panelBackgroundColorProperty,
+        stroke: HabitableZonesColors.panelBorderColorProperty,
+        cornerRadius: PANEL_CORNER_RADIUS,
+        xMargin: 12,
+        yMargin: 10,
+      },
+      providedOptions,
+    );
+    super(content, options);
   }
 }
