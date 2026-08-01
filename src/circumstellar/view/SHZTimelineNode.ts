@@ -13,10 +13,9 @@
 import { DerivedProperty } from "scenerystack/axon";
 import { Dimension2, Range } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
-import { DragListener, HBox, KeyboardListener, Line, Node, Path, Rectangle, Text, VBox } from "scenerystack/scenery";
+import { HBox, Line, Node, Path, Rectangle, RichDragListener, Text, VBox } from "scenerystack/scenery";
 import { PhetFont, TimeControlNode } from "scenerystack/scenery-phet";
 import { HSlider } from "scenerystack/sun";
-import HabitableZonesHotkeyData from "../../common/HabitableZonesHotkeyData.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import { HZ_CONSERVATIVE, HZ_OPTIMISTIC, SHZ_TIMELINE_WIDTH_PX } from "../../HabitableZonesConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -27,6 +26,12 @@ import { luminosity, sampleStar } from "../model/StarEvolution.js";
 import { SHZ_STARS, STAR_EPOCH_LABELS } from "../model/shzStars.js";
 
 const TIMELINE_WIDTH = SHZ_TIMELINE_WIDTH_PX;
+
+/** One arrow-key press scrubs this fraction of the selected star's total lifetime. */
+const AGE_STEP_FRACTION = 0.01;
+/** Keyboard drag deltas in whole AGE_STEP_FRACTION units; Shift gives a quarter step. */
+const AGE_KEY_STEP = 1;
+const AGE_KEY_SHIFT_STEP = 0.25;
 const HEADER_HEIGHT = 34;
 const TEMP_CHART_TOP = HEADER_HEIGHT + 8;
 const TEMP_CHART_HEIGHT = 60;
@@ -312,30 +317,35 @@ export class SHZTimelineNode extends Node {
       cursorLine.x = timeToX(model.ageProperty.value, star.timespan);
     };
     cursorLine.addInputListener(
-      new DragListener({
-        drag: (event) => {
-          const star = SHZ_STARS[model.selectedStarIndexProperty.value];
-          if (star === undefined) {
-            return;
-          }
-          const localPoint = cursorLine.globalToParentPoint(event.pointer.point);
-          const x = Math.max(0, Math.min(TIMELINE_WIDTH, localPoint.x));
-          model.ageProperty.value = xToTime(x, star.timespan);
+      new RichDragListener({
+        dragListenerOptions: {
+          drag: (event) => {
+            const star = SHZ_STARS[model.selectedStarIndexProperty.value];
+            if (star === undefined) {
+              return;
+            }
+            const localPoint = cursorLine.globalToParentPoint(event.pointer.point);
+            const x = Math.max(0, Math.min(TIMELINE_WIDTH, localPoint.x));
+            model.ageProperty.value = xToTime(x, star.timespan);
+          },
         },
-      }),
-    );
-    cursorLine.addInputListener(
-      new KeyboardListener({
-        keys: [...HabitableZonesHotkeyData.HORIZONTAL_ARROW_KEYS],
-        fireOnHold: true,
-        fire: (_event, keysPressed) => {
-          const star = SHZ_STARS[model.selectedStarIndexProperty.value];
-          if (star === undefined || star.timespan === 0) {
-            return;
-          }
-          const step = star.timespan / 100;
-          const delta = keysPressed === "arrowLeft" ? -step : keysPressed === "arrowRight" ? step : 0;
-          model.ageProperty.value = Math.max(0, Math.min(star.timespan, model.ageProperty.value + delta));
+        keyboardDragListenerOptions: {
+          keyboardDragDirection: "leftRight",
+          // The age step is a fraction of the selected star's lifetime, which differs per star, so
+          // the drag deltas are expressed in whole AGE_STEP units and scaled below. Without an
+          // explicit dragDelta this would fall back to continuous drag and step once per animation
+          // frame; taking modelDelta's magnitude (rather than just its sign) is also what makes
+          // shiftDragDelta produce the finer step it advertises.
+          dragDelta: AGE_KEY_STEP,
+          shiftDragDelta: AGE_KEY_SHIFT_STEP,
+          drag: (_event, listener) => {
+            const star = SHZ_STARS[model.selectedStarIndexProperty.value];
+            if (star === undefined || star.timespan === 0) {
+              return;
+            }
+            const delta = listener.modelDelta.x * (star.timespan * AGE_STEP_FRACTION);
+            model.ageProperty.value = Math.max(0, Math.min(star.timespan, model.ageProperty.value + delta));
+          },
         },
       }),
     );

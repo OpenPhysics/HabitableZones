@@ -19,9 +19,8 @@ import { Range, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { Orientation } from "scenerystack/phet-core";
 import type { ProfileColorProperty } from "scenerystack/scenery";
-import { DragListener, KeyboardListener, Line, Node, Path, Text } from "scenerystack/scenery";
+import { Line, Node, Path, RichDragListener, Text } from "scenerystack/scenery";
 import { PhetFont } from "scenerystack/scenery-phet";
-import HabitableZonesHotkeyData from "../../common/HabitableZonesHotkeyData.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import { GALACTIC_RADIUS_RANGE_KPC } from "../../HabitableZonesConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -147,23 +146,23 @@ export class GalacticRadiusPlotNode extends Node {
     });
 
     cursorLine.addInputListener(
-      new DragListener({
-        drag: (event) => {
-          const local = plotContainer.globalToParentPoint(event.pointer.point);
-          const radius = chartTransform.viewToModelX(Math.max(0, Math.min(PLOT_WIDTH, local.x)));
-          model.selectedRadiusProperty.value = GALACTIC_RADIUS_RANGE_KPC.constrainValue(radius);
+      new RichDragListener({
+        dragListenerOptions: {
+          drag: (event) => {
+            const local = plotContainer.globalToParentPoint(event.pointer.point);
+            const radius = chartTransform.viewToModelX(Math.max(0, Math.min(PLOT_WIDTH, local.x)));
+            model.selectedRadiusProperty.value = GALACTIC_RADIUS_RANGE_KPC.constrainValue(radius);
+          },
         },
-      }),
-    );
-    cursorLine.addInputListener(
-      new KeyboardListener({
-        keys: [...HabitableZonesHotkeyData.HORIZONTAL_ARROW_KEYS],
-        fireOnHold: true,
-        fire: (_event, keysPressed) => {
-          const delta = keysPressed === "arrowLeft" ? -RADIUS_KEYBOARD_STEP_KPC : RADIUS_KEYBOARD_STEP_KPC;
-          model.selectedRadiusProperty.value = GALACTIC_RADIUS_RANGE_KPC.constrainValue(
-            model.selectedRadiusProperty.value + delta,
-          );
+        keyboardDragListenerOptions: {
+          keyboardDragDirection: "leftRight",
+          dragDelta: RADIUS_KEYBOARD_STEP_KPC,
+          shiftDragDelta: RADIUS_KEYBOARD_STEP_KPC / 2,
+          drag: (_event, listener) => {
+            model.selectedRadiusProperty.value = GALACTIC_RADIUS_RANGE_KPC.constrainValue(
+              model.selectedRadiusProperty.value + listener.modelDelta.x,
+            );
+          },
         },
       }),
     );

@@ -6,9 +6,8 @@
  */
 import { Vector2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Circle, DragListener, KeyboardListener, Line, Node } from "scenerystack/scenery";
+import { Circle, Line, Node, RichDragListener } from "scenerystack/scenery";
 import { ShadedSphereNode } from "scenerystack/scenery-phet";
-import HabitableZonesHotkeyData from "../../common/HabitableZonesHotkeyData.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import {
   GALACTIC_DISC_PIXELS_PER_KPC,
@@ -92,21 +91,21 @@ export class MilkyWayDiscNode extends Node {
     };
 
     radialHandle.addInputListener(
-      new DragListener({
-        drag: (event) => {
-          setRadiusFromLocalPoint(this.globalToParentPoint(event.pointer.point));
+      new RichDragListener({
+        dragListenerOptions: {
+          drag: (event) => {
+            setRadiusFromLocalPoint(this.globalToParentPoint(event.pointer.point));
+          },
         },
-      }),
-    );
-    radialHandle.addInputListener(
-      new KeyboardListener({
-        keys: [...HabitableZonesHotkeyData.HORIZONTAL_ARROW_KEYS],
-        fireOnHold: true,
-        fire: (_event, keysPressed) => {
-          const delta = keysPressed === "arrowLeft" ? -RADIUS_KEYBOARD_STEP_KPC : RADIUS_KEYBOARD_STEP_KPC;
-          model.selectedRadiusProperty.value = GALACTIC_RADIUS_RANGE_KPC.constrainValue(
-            model.selectedRadiusProperty.value + delta,
-          );
+        keyboardDragListenerOptions: {
+          keyboardDragDirection: "leftRight",
+          dragDelta: RADIUS_KEYBOARD_STEP_KPC,
+          shiftDragDelta: RADIUS_KEYBOARD_STEP_KPC / 2,
+          drag: (_event, listener) => {
+            model.selectedRadiusProperty.value = GALACTIC_RADIUS_RANGE_KPC.constrainValue(
+              model.selectedRadiusProperty.value + listener.modelDelta.x,
+            );
+          },
         },
       }),
     );

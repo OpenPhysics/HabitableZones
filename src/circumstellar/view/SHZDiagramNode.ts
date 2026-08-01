@@ -14,7 +14,7 @@ import { DerivedProperty } from "scenerystack/axon";
 import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Circle, DragListener, KeyboardDragListener, Node, Path, Rectangle, Text } from "scenerystack/scenery";
+import { Circle, Node, Path, Rectangle, RichDragListener, Text } from "scenerystack/scenery";
 import { PhetFont, ShadedSphereNode } from "scenerystack/scenery-phet";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import {
@@ -379,23 +379,23 @@ export class SHZDiagramNode extends Node {
       },
     };
 
-    planetNode.addInputListener(
-      new DragListener({
-        drag: (event) => {
-          const local = contentLayer.globalToParentPoint(event.pointer.point);
-          const distanceAU = (local.x - originView.x) / shzDiagramPixelsPerAU(model.diagramZoomLevelProperty.value);
-          model.setEffectivePlanetDistanceAU(Math.max(0, distanceAU));
-        },
-      }),
-    );
-
     const keyboardDragDelta = shzDiagramScaleBarAU(model.diagramZoomLevelProperty.value) / 10;
+
     planetNode.addInputListener(
-      new KeyboardDragListener({
+      new RichDragListener({
         positionProperty: planetPositionProperty,
         transform: modelViewTransform,
-        dragDelta: keyboardDragDelta,
-        shiftDragDelta: keyboardDragDelta / 2,
+        dragListenerOptions: {
+          drag: (event) => {
+            const local = contentLayer.globalToParentPoint(event.pointer.point);
+            const distanceAU = (local.x - originView.x) / shzDiagramPixelsPerAU(model.diagramZoomLevelProperty.value);
+            model.setEffectivePlanetDistanceAU(Math.max(0, distanceAU));
+          },
+        },
+        keyboardDragListenerOptions: {
+          dragDelta: keyboardDragDelta,
+          shiftDragDelta: keyboardDragDelta / 2,
+        },
       }),
     );
 
