@@ -13,6 +13,21 @@ screens. Built with [SceneryStack](https://scenerystack.org/), Vite 8, TypeScrip
 - Git hooks for Biome pre-commit checks
 - Shared GitHub Actions CI via `OpenPhysics/Baton`
 
+### NAAP reference sources
+
+Upstream Flash / AIR / React NAAP sources live in the sibling
+[`Baseline`](https://github.com/OpenPhysics/Baseline) repo under `Astronomy/`
+(see `baselines.json`). Clone Baseline with the fleet bootstrap, then:
+
+```bash
+(cd ../Baseline && ./scripts/fetch-baselines.sh)
+```
+
+`npm run decompile` reads `.swf` files from
+`../Baseline/Astronomy/flash-animations` and writes ActionScript into the
+sim-local gitignored `NAAP/decompiled/` (requires Java; one-time
+`npm run decompile -- --setup`).
+
 ## Quick Start
 
 ```bash
