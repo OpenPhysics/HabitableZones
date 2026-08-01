@@ -125,7 +125,7 @@ Sun (1 M☉), age 0, planet at 1 AU, optimistic HZ, reference orbits on, grid of
 ## References
 
 - NAAP *Habitable Zones* lab: circumstellar and galactic simulators / student guide under
-  `NAAP/astroUNL/naap/`.
+  `../Baseline/Astronomy/astroUNL/naap/`.
 - Circumstellar evolution catalog transcribed from the NAAP circumstellar habitable-zone simulator
   (`shzStars` data; Hurley, Pols & Tout 2000 stellar-type codes).
 - Galactic metallicity gradient scale consistent with published Milky Way [Fe/H] gradients (e.g. Lin

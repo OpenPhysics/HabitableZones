@@ -12,7 +12,7 @@ We have three reference sources:
   `NAAP/decompiled/stellarHabitableZone004/scripts/` (circumstellar) and
   `NAAP/decompiled/milkyWayHabitability001-B/scripts/` (galactic).
 - **A modern React/JS port of the circumstellar sim only** under
-  `NAAP/astro-simulations/circumstellar-habitable-zone-simulator/src/` — cleaner
+  `../Baseline/Astronomy/astro-simulations/circumstellar-habitable-zone-simulator/src/` — cleaner
   to read; use it to cross-check the Flash maths.
 - **The existing SceneryStack scaffold** under `src/` — defines all the
   conventions this plan must follow.
@@ -119,14 +119,14 @@ drawing only if an import is missing):
 
 Reference physics doc to consult throughout (file:line cited inline):
 - `NAAP/decompiled/stellarHabitableZone004/scripts/SHZ*.as`
-- `NAAP/astro-simulations/circumstellar-habitable-zone-simulator/src/{diagram,star-properties,timeline}.jsx`, `src/utils/utils.js`
+- `../Baseline/Astronomy/astro-simulations/circumstellar-habitable-zone-simulator/src/{diagram,star-properties,timeline}.jsx`, `src/utils/utils.js`
 
 ## Stage A0 — Convert the star catalog (data module)
 
 **Goal:** ship the 17-star, time-indexed evolution catalog as typed TS.
 
 The decoded catalog already exists at
-`NAAP/astro-simulations/circumstellar-habitable-zone-simulator/src/shzStars.js`
+`../Baseline/Astronomy/astro-simulations/circumstellar-habitable-zone-simulator/src/shzStars.js`
 (2.67 MB, `export const shzStarData = [ … ]`). The `.dat` file is zlib+AMF and
 does **not** need re-decoding; the `.js` is the decoded form. (`scripts/shz_loader.py`
 documents the schema if needed.)
@@ -333,7 +333,7 @@ The original (`milkyWayHabitability001-B`) is a presentation layer: a draggable
 radius cursor (`DefineSprite_65/frame_1/DoAction.as`: `setRadius` clamps to
 [1.2, 22] kpc, reset → 18) linked across a galaxy disc (`MilkyWayComponent.as`,
 19 px/kpc) and two **pre-rendered** plots (`MetalsPlot.as`, `RiskPlot.as`, 14.7
-px/kpc). The pedagogy (`NAAP/astroUNL/naap/habitablezones/ghz.html`): metallicity
+px/kpc). The pedagogy (`../Baseline/Astronomy/astroUNL/naap/habitablezones/ghz.html`): metallicity
 **decreases outward** (favors planets inward); cosmic threats (supernovae, central
 black-hole radiation, Oort perturbations) **increase inward**; the GHZ is the
 intermediate **annulus** where both are acceptable. We reconstruct the two curves
@@ -403,7 +403,7 @@ update; tab order + summary sensible. Gate.
 
 - Tune curve coefficients and thresholds so the visual matches the Flash plot
   shapes (open the original via the `.swf` or the conceptual figures in
-  `NAAP/astroUNL/naap/habitablezones/` if a reference image helps).
+  `../Baseline/Astronomy/astroUNL/naap/habitablezones/` if a reference image helps).
 - Projector-mode color pass; keyboard drag for the cursor; final a11y review.
 
 ---
@@ -454,7 +454,7 @@ update; tab order + summary sensible. Gate.
 | Diagram scaling / zoom / scalebar / grid | `SHZDiagram.as`, `diagram.jsx:71-97`, `SHZDiagramScalebar.as`, `SHZDiagramGrid.as`, `SHZDiagramRefOrbits.as` |
 | Galactic radius selection (1.2–22 kpc) | `milkyWayHabitability001-B/…/DefineSprite_65/frame_1/DoAction.as` |
 | Galactic disc / plot scaling | `MilkyWayComponent.as` (19 px/kpc), `MetalsPlot.as`/`RiskPlot.as` (14.7 px/kpc) |
-| Galactic concept (curve shapes) | `NAAP/astroUNL/naap/habitablezones/ghz.html` |
+| Galactic concept (curve shapes) | `../Baseline/Astronomy/astroUNL/naap/habitablezones/ghz.html` |
 
 ## Notes / risks
 
