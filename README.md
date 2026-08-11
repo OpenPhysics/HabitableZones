@@ -1,5 +1,7 @@
 # Habitable Zones
 
+[![CI](https://github.com/OpenPhysics/HabitableZones/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenPhysics/HabitableZones/actions/workflows/ci.yml)
+
 SceneryStack port of the NAAP *Habitable Zones* lab — circumstellar and galactic habitability
 screens. Built with [SceneryStack](https://scenerystack.org/), Vite 8, TypeScript, and Biome 2.
 
