@@ -192,6 +192,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["tests/**"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            "useExplicitType": "off"
+          }
+        }
+      }
     }
   ],
   "javascript": {
