@@ -35,11 +35,8 @@ export function createCircumstellarIcon(): ScreenIcon {
     centerX: CX,
     centerY: CY,
   });
-  const hzShape = new Shape()
-    .moveTo(CX + 150, CY)
-    .arc(CX, CY, 150, 0, Math.PI * 2, false)
-    .moveTo(CX + 95, CY)
-    .arc(CX, CY, 95, 0, Math.PI * 2, true);
+  // Ring as circle difference — kite asserts on anticlockwise arc(0, 2π).
+  const hzShape = Shape.circle(CX, CY, 150).shapeDifference(Shape.circle(CX, CY, 95));
   const hz = new Path(hzShape, {
     fill: HabitableZonesColors.habitableZoneFillColorProperty,
     stroke: HabitableZonesColors.habitableZoneStrokeColorProperty,
