@@ -7,8 +7,10 @@ import {
   computeTidalLockTimeYears,
   effectivePlanetDistanceAU,
   effectivePlanetDistanceRangeAU,
+  initialPlanetDistanceAU,
 } from "../src/circumstellar/model/planetEvolution.js";
 import { SHZ_STARS } from "../src/circumstellar/model/shzStars.js";
+import { PLANET_DISTANCE_RANGE_AU } from "../src/HabitableZonesConstants.js";
 
 describe("planetEvolution", () => {
   it("scales effective distance outward as stellar mass decreases", () => {
@@ -19,6 +21,15 @@ describe("planetEvolution", () => {
     const range = effectivePlanetDistanceRangeAU(1, 0.5);
     expect(range.min).toBeCloseTo(0.02, 6);
     expect(range.max).toBeCloseTo(1000, 6);
+  });
+
+  it("inverting the display-range max can land just above the zero-age max", () => {
+    const catalogMass = 0.2;
+    const currentMass = 0.15;
+    const displayMax = effectivePlanetDistanceRangeAU(catalogMass, currentMass).max;
+    const zeroAge = initialPlanetDistanceAU(displayMax, catalogMass, currentMass);
+    expect(zeroAge).toBeGreaterThan(PLANET_DISTANCE_RANGE_AU.max);
+    expect(PLANET_DISTANCE_RANGE_AU.constrainValue(zeroAge)).toBe(PLANET_DISTANCE_RANGE_AU.max);
   });
 
   it("computes a finite tidal-lock time for a close-in hot Jupiter", () => {

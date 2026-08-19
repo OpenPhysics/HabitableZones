@@ -230,15 +230,20 @@ export class CircumstellarModel implements TModel {
         return;
       }
       syncingDisplayDistance = true;
-      const range = this.getEffectivePlanetDistanceRange();
-      const clamped = range.constrainValue(distance);
-      this.displayPlanetDistanceProperty.value = clamped;
-      if (clamped !== distance) {
-        const star = getStar(this.selectedStarIndexProperty.value);
-        const currentMass = sampleStar(star, this.ageProperty.value).mass;
-        this.planetDistanceProperty.value = initialPlanetDistanceAU(clamped, star.mass, currentMass);
+      try {
+        const range = this.getEffectivePlanetDistanceRange();
+        const clamped = range.constrainValue(distance);
+        this.displayPlanetDistanceProperty.value = clamped;
+        if (clamped !== distance) {
+          const star = getStar(this.selectedStarIndexProperty.value);
+          const currentMass = sampleStar(star, this.ageProperty.value).mass;
+          this.planetDistanceProperty.value = PLANET_DISTANCE_RANGE_AU.constrainValue(
+            initialPlanetDistanceAU(clamped, star.mass, currentMass),
+          );
+        }
+      } finally {
+        syncingDisplayDistance = false;
       }
-      syncingDisplayDistance = false;
     };
 
     this.effectivePlanetDistanceProperty.link(syncDisplayPlanetDistanceFromEffective);
@@ -247,8 +252,11 @@ export class CircumstellarModel implements TModel {
         return;
       }
       syncingDisplayDistance = true;
-      this.setEffectivePlanetDistanceAU(distance);
-      syncingDisplayDistance = false;
+      try {
+        this.setEffectivePlanetDistanceAU(distance);
+      } finally {
+        syncingDisplayDistance = false;
+      }
     });
 
     const updateDisplayPlanetDistanceRange = (): void => {
@@ -351,7 +359,9 @@ export class CircumstellarModel implements TModel {
     const star = getStar(this.selectedStarIndexProperty.value);
     const currentMass = sampleStar(star, this.ageProperty.value).mass;
     const constrained = this.getEffectivePlanetDistanceRange().constrainValue(effectiveDistanceAU);
-    this.planetDistanceProperty.value = initialPlanetDistanceAU(constrained, star.mass, currentMass);
+    this.planetDistanceProperty.value = PLANET_DISTANCE_RANGE_AU.constrainValue(
+      initialPlanetDistanceAU(constrained, star.mass, currentMass),
+    );
   }
 
   /** Mass-scaled display range for the planet-distance control (Flash drag limits). */
