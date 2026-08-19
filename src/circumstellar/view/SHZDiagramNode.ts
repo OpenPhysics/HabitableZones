@@ -385,13 +385,6 @@ export class SHZDiagramNode extends Node {
       new RichDragListener({
         positionProperty: planetPositionProperty,
         transform: modelViewTransform,
-        dragListenerOptions: {
-          drag: (event) => {
-            const local = contentLayer.globalToParentPoint(event.pointer.point);
-            const distanceAU = (local.x - originView.x) / shzDiagramPixelsPerAU(model.diagramZoomLevelProperty.value);
-            model.setEffectivePlanetDistanceAU(Math.max(0, distanceAU));
-          },
-        },
         keyboardDragListenerOptions: {
           dragDelta: keyboardDragDelta,
           shiftDragDelta: keyboardDragDelta / 2,

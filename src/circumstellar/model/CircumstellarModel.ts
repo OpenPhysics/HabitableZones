@@ -223,24 +223,27 @@ export class CircumstellarModel implements TModel {
       units: "AU",
     });
 
+    // Bidirectional d₀ ↔ d_eff UI mirror. Never write planetDistanceProperty
+    // from inside effectivePlanetDistanceProperty's listener — that reenters the
+    // DerivedProperty under ?ea. setValueAndRange keeps the NumberControl range
+    // and value valid in one shot as mass loss stretches the slider.
     let syncingDisplayDistance = false;
 
     const syncDisplayPlanetDistanceFromEffective = (distance: number): void => {
       if (syncingDisplayDistance) {
         return;
       }
+      const range = this.getEffectivePlanetDistanceRange();
+      const clamped = range.constrainValue(distance);
+      if (
+        this.displayPlanetDistanceProperty.value === clamped &&
+        this.displayPlanetDistanceProperty.range.equals(range)
+      ) {
+        return;
+      }
       syncingDisplayDistance = true;
       try {
-        const range = this.getEffectivePlanetDistanceRange();
-        const clamped = range.constrainValue(distance);
-        this.displayPlanetDistanceProperty.value = clamped;
-        if (clamped !== distance) {
-          const star = getStar(this.selectedStarIndexProperty.value);
-          const currentMass = sampleStar(star, this.ageProperty.value).mass;
-          this.planetDistanceProperty.value = PLANET_DISTANCE_RANGE_AU.constrainValue(
-            initialPlanetDistanceAU(clamped, star.mass, currentMass),
-          );
-        }
+        this.displayPlanetDistanceProperty.setValueAndRange(clamped, range);
       } finally {
         syncingDisplayDistance = false;
       }
@@ -258,13 +261,6 @@ export class CircumstellarModel implements TModel {
         syncingDisplayDistance = false;
       }
     });
-
-    const updateDisplayPlanetDistanceRange = (): void => {
-      this.displayPlanetDistanceProperty.rangeProperty.value = this.getEffectivePlanetDistanceRange();
-      syncDisplayPlanetDistanceFromEffective(this.effectivePlanetDistanceProperty.value);
-    };
-    this.selectedStarIndexProperty.link(updateDisplayPlanetDistanceRange);
-    this.ageProperty.link(updateDisplayPlanetDistanceRange);
 
     this.selectedStarIndexProperty.link((index) => {
       const star = getStar(index);
@@ -359,9 +355,13 @@ export class CircumstellarModel implements TModel {
     const star = getStar(this.selectedStarIndexProperty.value);
     const currentMass = sampleStar(star, this.ageProperty.value).mass;
     const constrained = this.getEffectivePlanetDistanceRange().constrainValue(effectiveDistanceAU);
-    this.planetDistanceProperty.value = PLANET_DISTANCE_RANGE_AU.constrainValue(
+    const nextInitial = PLANET_DISTANCE_RANGE_AU.constrainValue(
       initialPlanetDistanceAU(constrained, star.mass, currentMass),
     );
+    if (nextInitial === this.planetDistanceProperty.value) {
+      return;
+    }
+    this.planetDistanceProperty.value = nextInitial;
   }
 
   /** Mass-scaled display range for the planet-distance control (Flash drag limits). */

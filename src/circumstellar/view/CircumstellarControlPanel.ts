@@ -20,9 +20,9 @@ import {
 } from "../../common/HabitableZonesButtonOptions.js";
 import { HabitableZonesPanel } from "../../common/HabitableZonesPanel.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
-import { PLANET_DISTANCE_RANGE_AU } from "../../HabitableZonesConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { CircumstellarModel, HzMode, RealSystemId } from "../model/CircumstellarModel.js";
+import { planetDisplayDistanceEnvelopeAU } from "../model/planetEvolution.js";
 import { NONE_REAL_SYSTEM_ID, REAL_SYSTEMS } from "../model/realSystems.js";
 import { SHZ_STARS } from "../model/shzStars.js";
 
@@ -89,8 +89,9 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
     const planetDistanceControl = new NumberControl(
       strings.orbitalRadiusStringProperty,
       model.displayPlanetDistanceProperty,
-      PLANET_DISTANCE_RANGE_AU,
+      planetDisplayDistanceEnvelopeAU(),
       {
+        enabledRangeProperty: model.displayPlanetDistanceProperty.rangeProperty,
         accessibleName: a11y.controls.planetDistanceControlStringProperty,
         titleNodeOptions: { font: LABEL_FONT, fill: HabitableZonesColors.textColorProperty },
         numberDisplayOptions: {

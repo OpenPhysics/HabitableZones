@@ -21,4 +21,20 @@ describe("CircumstellarModel planet distance", () => {
     expect(model.planetDistanceProperty.value).toBeLessThanOrEqual(PLANET_DISTANCE_RANGE_AU.max);
     expect(model.planetDistanceProperty.value).toBeGreaterThanOrEqual(PLANET_DISTANCE_RANGE_AU.min);
   });
+
+  it("scrubs age at max zero-age distance without axon reentry", () => {
+    const model = new CircumstellarModel();
+    model.selectedStarIndexProperty.value = 0;
+    model.planetDistanceProperty.value = PLANET_DISTANCE_RANGE_AU.max;
+    const timespan = model.starTimespanProperty.value;
+    const steps = 40;
+    expect(() => {
+      for (let i = 0; i <= steps; i++) {
+        model.ageProperty.value = (timespan * i) / steps;
+        model.displayPlanetDistanceProperty.value = model.displayPlanetDistanceProperty.range.max;
+      }
+    }).not.toThrow();
+    expect(model.planetDistanceProperty.value).toBeLessThanOrEqual(PLANET_DISTANCE_RANGE_AU.max);
+    expect(model.displayPlanetDistanceProperty.range.contains(model.displayPlanetDistanceProperty.value)).toBe(true);
+  });
 });

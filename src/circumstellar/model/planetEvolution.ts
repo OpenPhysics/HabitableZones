@@ -12,7 +12,7 @@ import {
   SOLAR_RADIUS_KM,
 } from "../../HabitableZonesConstants.js";
 import { sampleStar } from "./StarEvolution.js";
-import type { StarRecord } from "./shzStars.js";
+import { SHZ_STARS, type StarRecord } from "./shzStars.js";
 
 /** Minimum Roche-limit helper distance, AU (MainTimeline.as minPlanetDistance). */
 const MIN_ROCHE_HELPER_AU = 1.5;
@@ -63,6 +63,24 @@ export function effectivePlanetDistanceRangeAU(catalogMassSolar: number, current
   }
   const massRatio = catalogMassSolar / currentMassSolar;
   return new Range(PLANET_DISTANCE_RANGE_AU.min * massRatio, PLANET_DISTANCE_RANGE_AU.max * massRatio);
+}
+
+/**
+ * Union of every mass-scaled display range in the SHZ catalog. NumberControl's
+ * track must span this envelope so the thumb can follow d_eff after mass loss.
+ */
+export function planetDisplayDistanceEnvelopeAU(): Range {
+  let minAU = PLANET_DISTANCE_RANGE_AU.min;
+  let maxAU = PLANET_DISTANCE_RANGE_AU.max;
+  for (const star of SHZ_STARS) {
+    if (star.maxMass > 0) {
+      minAU = Math.min(minAU, PLANET_DISTANCE_RANGE_AU.min * (star.mass / star.maxMass));
+    }
+    if (star.minMass > 0) {
+      maxAU = Math.max(maxAU, PLANET_DISTANCE_RANGE_AU.max * (star.mass / star.minMass));
+    }
+  }
+  return new Range(minAU, maxAU);
 }
 
 /** Roche / tidal-disruption threshold in AU at a given evolutionary epoch. */

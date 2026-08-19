@@ -8,6 +8,7 @@ import {
   effectivePlanetDistanceAU,
   effectivePlanetDistanceRangeAU,
   initialPlanetDistanceAU,
+  planetDisplayDistanceEnvelopeAU,
 } from "../src/circumstellar/model/planetEvolution.js";
 import { SHZ_STARS } from "../src/circumstellar/model/shzStars.js";
 import { PLANET_DISTANCE_RANGE_AU } from "../src/HabitableZonesConstants.js";
@@ -21,6 +22,15 @@ describe("planetEvolution", () => {
     const range = effectivePlanetDistanceRangeAU(1, 0.5);
     expect(range.min).toBeCloseTo(0.02, 6);
     expect(range.max).toBeCloseTo(1000, 6);
+  });
+
+  it("the NumberControl envelope covers every catalog mass-scaled range", () => {
+    const envelope = planetDisplayDistanceEnvelopeAU();
+    for (const star of SHZ_STARS) {
+      const range = effectivePlanetDistanceRangeAU(star.mass, star.minMass);
+      expect(envelope.min).toBeLessThanOrEqual(range.min);
+      expect(envelope.max).toBeGreaterThanOrEqual(range.max);
+    }
   });
 
   it("inverting the display-range max can land just above the zero-age max", () => {
