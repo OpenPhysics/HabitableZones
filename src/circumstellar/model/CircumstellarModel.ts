@@ -264,10 +264,10 @@ export class CircumstellarModel implements TModel {
 
     this.selectedStarIndexProperty.link((index) => {
       const star = getStar(index);
-      this.ageProperty.rangeProperty.value = new Range(0, star.timespan);
-      if (this.ageProperty.value > star.timespan) {
-        this.ageProperty.value = star.timespan;
-      }
+      // Shrink range and value together — assigning range first asserts under ?ea
+      // when the previous star's age sits above the new timespan (Reset All).
+      const nextAge = Math.min(this.ageProperty.value, star.timespan);
+      this.ageProperty.setValueAndRange(nextAge, new Range(0, star.timespan));
     });
 
     this.luminosityProperty = new DerivedProperty([this.selectedStarIndexProperty, this.ageProperty], (index, age) =>
